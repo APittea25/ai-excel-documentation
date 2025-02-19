@@ -2,8 +2,12 @@ import streamlit as st
 import pandas as pd
 import openai
 
-# OpenAI API Key (Store securely using Streamlit secrets for production)
-openai.api_key = st.secrets["openai_api_key"] if "openai_api_key" in st.secrets else "your-api-key"
+openai_api_key = st.secrets["OPENAI_API_KEY"]
+
+if not openai_api_key:
+    st.error("⚠️ OpenAI API key is missing. Add it to Streamlit Secrets.")
+else:
+    openai.api_key = openai_api_key
 
 # App title
 st.title("📊 AI-Powered Excel Documentation")
