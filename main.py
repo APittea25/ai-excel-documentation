@@ -14,7 +14,6 @@ else:
        response = client.chat.completions.create(
     model="gpt-3.5-turbo",  # 🔄 Use a cheaper model
     messages=[{"role": "system", "content": "Say hello"}]
-)
         )
         st.success("✅ OpenAI API Key is working!")
         st.write("Response:", response.choices[0].message.content)
