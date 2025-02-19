@@ -1,13 +1,16 @@
 import streamlit as st
 import pandas as pd
+import openai
+
+# OpenAI API Key (Store securely using Streamlit secrets for production)
+openai.api_key = st.secrets["openai_api_key"] if "openai_api_key" in st.secrets else "your-api-key"
 
 # App title
-st.title("📊 Excel File Uploader")
+st.title("📊 AI-Powered Excel Documentation")
 
 # File uploader
 uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx", "xls"])
 
-# If a file is uploaded, read and display it
 if uploaded_file is not None:
     st.success(f"✅ File '{uploaded_file.name}' uploaded successfully!")
     
@@ -15,12 +18,31 @@ if uploaded_file is not None:
     df = pd.read_excel(uploaded_file, sheet_name=None)  # Read all sheets
     sheet_names = df.keys()
     
-    # Let user select a sheet to display
+    # Let user select a sheet
     selected_sheet = st.selectbox("Select a sheet", sheet_names)
 
-    # Show the selected sheet
+    # Show preview
     st.write(f"### Preview of {selected_sheet}")
-    st.dataframe(df[selected_sheet].head())  # Show first few rows
+    st.dataframe(df[selected_sheet].head())
+
+    # Generate AI-powered documentation
+    st.write("### 📝 AI-Generated Documentation")
+
+    # Prepare data for AI
+    sample_data = df[selected_sheet].head().to_dict()
+
+    # Create prompt for AI
+    prompt = f"Analyze this Excel sheet and describe its structure, column meanings, and any insights:\n{sample_data}"
+
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        ai_summary = response["choices"][0]["message"]["content"]
+        st.write(ai_summary)
+    except Exception as e:
+        st.error("⚠️ Error fetching AI response. Check your API key and limits.")
 
 else:
     st.warning("⚠️ Please upload an Excel file to proceed.")
