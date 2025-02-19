@@ -1,22 +1,22 @@
-import openai
 import streamlit as st
+import openai
 
-# Get API key from Streamlit secrets
+# Get OpenAI API Key from Streamlit Secrets
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
 
 if not openai_api_key:
     st.error("⚠️ OpenAI API key is missing. Add it to Streamlit Secrets.")
 else:
-    client = openai.OpenAI(api_key=openai_api_key)  # ✅ Use OpenAI client
+    client = openai.OpenAI(api_key=openai_api_key)
 
-    # Test API key with a simple request
+    # Test OpenAI connection
     try:
-        response = client.chat.completions.create(  # ✅ New syntax
+        response = client.chat.completions.create(
             model="gpt-4",
             messages=[{"role": "system", "content": "Say hello"}]
         )
-        st.success("✅ API Key is working!")
-        st.write("Response:", response.choices[0].message.content)  # ✅ Correct response format
+        st.success("✅ OpenAI API Key is working!")
+        st.write("Response:", response.choices[0].message.content)
     except Exception as e:
         st.error(f"⚠️ OpenAI API Error: {e}")
 
