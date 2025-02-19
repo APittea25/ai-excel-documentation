@@ -44,7 +44,7 @@ if uploaded_file:
     
     try:
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",  # Using the cheaper model
+            model="gpt-4",  # Using the cheaper model
             messages=[{"role": "user", "content": prompt}]
         )
         ai_summary = response.choices[0].message.content
@@ -53,6 +53,7 @@ if uploaded_file:
         st.error(f"⚠️ OpenAI API Error: {e}")
 else:
     st.warning("⚠️ Please upload an Excel file to proceed.")
+
 
 
 
