@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import openai
 import graphviz
+import openpyxl
 
 # Get OpenAI API Key from Streamlit Secrets
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
@@ -40,17 +41,29 @@ if uploaded_file:
     st.write("### 🔄 Spreadsheet Flow Diagram")
     flow = graphviz.Digraph()
     
+    # Detect formula-based relationships
+    wb = openpyxl.load_workbook(uploaded_file, data_only=False)
+    sheet_links = {}
+    
+    for sheet in sheet_names:
+        ws = wb[sheet]
+        sheet_links[sheet] = set()
+        for row in ws.iter_rows():
+            for cell in row:
+                if isinstance(cell.value, str) and cell.value.startswith("="):
+                    for ref_sheet in sheet_names:
+                        if ref_sheet in cell.value:
+                            sheet_links[sheet].add(ref_sheet)
+    
     for sheet in sheet_names:
         if sheet == selected_sheet:
             flow.node(sheet, color="lightblue", style="filled")  # Highlight selected tab
         else:
             flow.node(sheet)
     
-    for sheet in sheet_names:
-        # Example: If sheets reference each other, we could add logic to detect links
-        # Here, we assume sheets are connected sequentially for simplicity
-        if sheet != sheet_names[-1]:
-            flow.edge(sheet, sheet_names[sheet_names.index(sheet) + 1])
+    for sheet, links in sheet_links.items():
+        for linked_sheet in links:
+            flow.edge(sheet, linked_sheet)
     
     st.graphviz_chart(flow)
     
@@ -72,4 +85,3 @@ if uploaded_file:
         st.error(f"⚠️ OpenAI API Error: {e}")
 else:
     st.warning("⚠️ Please upload an Excel file to proceed.")
-
