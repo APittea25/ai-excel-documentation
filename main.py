@@ -37,6 +37,10 @@ if uploaded_file:
     st.write(f"### Preview of {selected_sheet}")
     st.dataframe(sheet_data.head())
     
+    # Button to show full sheet
+    if st.button("Show Full Sheet"):
+        st.dataframe(sheet_data)
+    
     # Generate Flow Diagram of Sheets
     st.write("### 🔄 Spreadsheet Flow Diagram")
     flow = graphviz.Digraph()
