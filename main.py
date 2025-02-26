@@ -37,8 +37,9 @@ if uploaded_file:
     st.write(f"### Preview of {selected_sheet}")
     st.dataframe(sheet_data.head())
     
-    # Button to show full sheet
-    if st.button("Show Full Sheet"):
+    # Toggle button for full sheet preview
+    show_full = st.checkbox("Show Full Sheet")
+    if show_full:
         st.dataframe(sheet_data)
     
     # Generate Flow Diagram of Sheets
