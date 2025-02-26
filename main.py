@@ -89,16 +89,16 @@ if uploaded_file:
     except Exception as e:
         st.error(f"⚠️ OpenAI API Error: {e}")
     
-    # Generate AI-Powered Code Representation of the Sheet
-    st.write("### 🖥️ AI-Generated Python Code for the Sheet")
-    code_prompt = f"Generate a Python script that loads this Excel sheet into a Pandas DataFrame and provides basic insights:\n{sample_data}"
+    # Generate AI-Powered Code Representation of the Sheet with Formulas
+    st.write("### 🖥️ AI-Generated Python Code Replicating Excel Formulas")
+    formula_prompt = f"Generate a Python script using pandas that replicates the formulas in the following Excel sheet:\n{sample_data}\nInclude any necessary calculations that reflect Excel formulas."
     
     try:
-        code_response = client.chat.completions.create(
+        formula_response = client.chat.completions.create(
             model="gpt-4",
-            messages=[{"role": "user", "content": code_prompt}]
+            messages=[{"role": "user", "content": formula_prompt}]
         )
-        generated_code = code_response.choices[0].message.content
+        generated_code = formula_response.choices[0].message.content
         st.code(generated_code, language='python')
     except Exception as e:
         st.error(f"⚠️ OpenAI API Error: {e}")
