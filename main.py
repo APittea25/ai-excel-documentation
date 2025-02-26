@@ -104,12 +104,18 @@ if uploaded_file:
     
     st.graphviz_chart(flow)
     
-    # Show AI-generated documentation
+    # Show AI-generated documentation safely
     st.write("### 📝 AI-Generated Documentation")
-    st.write(st.session_state.ai_responses[selected_sheet]["summary"])
-    
-    # Show AI-generated Python code
+    if selected_sheet in st.session_state.ai_responses:
+        st.write(st.session_state.ai_responses[selected_sheet].get("summary", "⚠️ No AI response available. Try refreshing AI responses."))
+    else:
+        st.warning(f"⚠️ AI responses not available for '{selected_sheet}'. Try refreshing AI responses.")
+
+    # Show AI-generated Python code safely
     st.write("### 🖥️ AI-Generated Python Code Replicating Excel Formulas")
-    st.code(st.session_state.ai_responses[selected_sheet]["code"], language='python')
+    if selected_sheet in st.session_state.ai_responses:
+        st.code(st.session_state.ai_responses[selected_sheet].get("code", "⚠️ No AI-generated code available. Try refreshing AI responses."), language='python')
+    else:
+        st.warning(f"⚠️ AI-generated code not available for '{selected_sheet}'. Try refreshing AI responses.")
 else:
     st.warning("⚠️ Please upload an Excel file to proceed.")
