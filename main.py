@@ -88,5 +88,33 @@ if uploaded_file:
         st.write(ai_summary)
     except Exception as e:
         st.error(f"⚠️ OpenAI API Error: {e}")
+    
+    # Generate AI-Powered Code Representation of the Sheet
+    st.write("### 🖥️ AI-Generated Python Code for the Sheet")
+    code_prompt = f"Generate a Python script that loads this Excel sheet into a Pandas DataFrame and provides basic insights:\n{sample_data}"
+    
+    try:
+        code_response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": code_prompt}]
+        )
+        generated_code = code_response.choices[0].message.content
+        st.code(generated_code, language='python')
+    except Exception as e:
+        st.error(f"⚠️ OpenAI API Error: {e}")
+    
+    # Add chat input for follow-up questions
+    st.write("### 💬 Ask AI Further Questions")
+    user_query = st.text_area("Ask a question about this spreadsheet:")
+    if st.button("Submit Question") and user_query:
+        query_prompt = f"Based on this dataset, answer the following question: {user_query}\n{sample_data}"
+        try:
+            query_response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[{"role": "user", "content": query_prompt}]
+            )
+            st.write(query_response.choices[0].message.content)
+        except Exception as e:
+            st.error(f"⚠️ OpenAI API Error: {e}")
 else:
     st.warning("⚠️ Please upload an Excel file to proceed.")
