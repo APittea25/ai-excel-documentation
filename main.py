@@ -27,10 +27,40 @@ if uploaded_file:
     df = pd.ExcelFile(uploaded_file)
     sheet_names = df.sheet_names
     
+    # Store AI-generated responses in session state
+    if 'ai_responses' not in st.session_state or st.button("🔄 Refresh AI Responses"):
+        st.session_state.ai_responses = {}
+        for sheet in sheet_names:
+            sheet_data = df.parse(sheet)
+            sample_data = sheet_data.head().to_dict()
+            prompt = f"Analyze this Excel sheet and describe its structure, column meanings, and any insights:\n{sample_data}"
+            formula_prompt = f"Generate a Python script using pandas that replicates the formulas in the following Excel sheet:\n{sample_data}\nInclude any necessary calculations that reflect Excel formulas."
+            
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4",
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                ai_summary = response.choices[0].message.content
+            except Exception as e:
+                ai_summary = f"⚠️ OpenAI API Error: {e}"
+            
+            try:
+                formula_response = client.chat.completions.create(
+                    model="gpt-4",
+                    messages=[{"role": "user", "content": formula_prompt}]
+                )
+                generated_code = formula_response.choices[0].message.content
+            except Exception as e:
+                generated_code = f"⚠️ OpenAI API Error: {e}"
+            
+            st.session_state.ai_responses[sheet] = {
+                "summary": ai_summary,
+                "code": generated_code
+            }
+    
     # Let user select a sheet
     selected_sheet = st.selectbox("Select a sheet", sheet_names)
-
-    # Load selected sheet
     sheet_data = df.parse(selected_sheet)
     
     # Show preview
@@ -58,58 +88,35 @@ if uploaded_file:
                 if isinstance(cell.value, str) and cell.value.startswith("="):
                     for ref_sheet in sheet_names:
                         if ref_sheet in cell.value:
-                            if ref_sheet not in sheet_links:  # Ensure referenced sheet exists
+                            if ref_sheet not in sheet_links:
                                 sheet_links[ref_sheet] = set()
-                            sheet_links[ref_sheet].add(sheet)  # Flip the direction of the edge
+                            sheet_links[ref_sheet].add(sheet)
     
     for sheet in sheet_names:
         if sheet == selected_sheet:
-            flow.node(sheet, color="lightblue", style="filled")  # Highlight selected tab
+            flow.node(sheet, color="lightblue", style="filled")
         else:
             flow.node(sheet)
     
     for sheet, links in sheet_links.items():
         for linked_sheet in links:
-            flow.edge(linked_sheet, sheet)  # Flip the direction of the edge
+            flow.edge(linked_sheet, sheet)
     
     st.graphviz_chart(flow)
     
-    # Generate AI-powered documentation
+    # Show preloaded AI-generated documentation
     st.write("### 📝 AI-Generated Documentation")
+    st.write(st.session_state.ai_responses[selected_sheet]["summary"])
     
-    # Prepare data for AI
-    sample_data = sheet_data.head().to_dict()
-    prompt = f"Analyze this Excel sheet and describe its structure, column meanings, and any insights:\n{sample_data}"
-    
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4",  # Using the cheaper model
-            messages=[{"role": "user", "content": prompt}]
-        )
-        ai_summary = response.choices[0].message.content
-        st.write(ai_summary)
-    except Exception as e:
-        st.error(f"⚠️ OpenAI API Error: {e}")
-    
-    # Generate AI-Powered Code Representation of the Sheet with Formulas
+    # Show preloaded AI-generated Python code
     st.write("### 🖥️ AI-Generated Python Code Replicating Excel Formulas")
-    formula_prompt = f"Generate a Python script using pandas that replicates the formulas in the following Excel sheet:\n{sample_data}\nInclude any necessary calculations that reflect Excel formulas."
-    
-    try:
-        formula_response = client.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": formula_prompt}]
-        )
-        generated_code = formula_response.choices[0].message.content
-        st.code(generated_code, language='python')
-    except Exception as e:
-        st.error(f"⚠️ OpenAI API Error: {e}")
+    st.code(st.session_state.ai_responses[selected_sheet]["code"], language='python')
     
     # Add chat input for follow-up questions
     st.write("### 💬 Ask AI Further Questions")
     user_query = st.text_area("Ask a question about this spreadsheet:")
     if st.button("Submit Question") and user_query:
-        query_prompt = f"Based on this dataset, answer the following question: {user_query}\n{sample_data}"
+        query_prompt = f"Based on this dataset, answer the following question: {user_query}\n{sheet_data.head().to_dict()}"
         try:
             query_response = client.chat.completions.create(
                 model="gpt-4",
