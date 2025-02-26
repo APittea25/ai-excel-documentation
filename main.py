@@ -58,6 +58,8 @@ if uploaded_file:
                 if isinstance(cell.value, str) and cell.value.startswith("="):
                     for ref_sheet in sheet_names:
                         if ref_sheet in cell.value:
+                            if ref_sheet not in sheet_links:  # Ensure referenced sheet exists
+                                sheet_links[ref_sheet] = set()
                             sheet_links[ref_sheet].add(sheet)  # Flip the direction of the edge
     
     for sheet in sheet_names:
