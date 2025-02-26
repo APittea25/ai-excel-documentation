@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import openai
+import graphviz
 
 # Get OpenAI API Key from Streamlit Secrets
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
@@ -35,6 +36,24 @@ if uploaded_file:
     st.write(f"### Preview of {selected_sheet}")
     st.dataframe(sheet_data.head())
     
+    # Generate Flow Diagram of Sheets
+    st.write("### 🔄 Spreadsheet Flow Diagram")
+    flow = graphviz.Digraph()
+    
+    for sheet in sheet_names:
+        if sheet == selected_sheet:
+            flow.node(sheet, color="lightblue", style="filled")  # Highlight selected tab
+        else:
+            flow.node(sheet)
+    
+    for sheet in sheet_names:
+        # Example: If sheets reference each other, we could add logic to detect links
+        # Here, we assume sheets are connected sequentially for simplicity
+        if sheet != sheet_names[-1]:
+            flow.edge(sheet, sheet_names[sheet_names.index(sheet) + 1])
+    
+    st.graphviz_chart(flow)
+    
     # Generate AI-powered documentation
     st.write("### 📝 AI-Generated Documentation")
     
@@ -51,19 +70,6 @@ if uploaded_file:
         st.write(ai_summary)
     except Exception as e:
         st.error(f"⚠️ OpenAI API Error: {e}")
-    
-    # Add chat input for follow-up questions
-    st.write("### 💬 Ask AI Further Questions")
-    user_query = st.text_area("Ask a question about this spreadsheet:")
-    if st.button("Submit Question") and user_query:
-        query_prompt = f"Based on this dataset, answer the following question: {user_query}\n{sample_data}"
-        try:
-            query_response = client.chat.completions.create(
-                model="gpt-4",
-                messages=[{"role": "user", "content": query_prompt}]
-            )
-            st.write(query_response.choices[0].message.content)
-        except Exception as e:
-            st.error(f"⚠️ OpenAI API Error: {e}")
 else:
     st.warning("⚠️ Please upload an Excel file to proceed.")
+
