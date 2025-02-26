@@ -58,7 +58,7 @@ if uploaded_file:
                 if isinstance(cell.value, str) and cell.value.startswith("="):
                     for ref_sheet in sheet_names:
                         if ref_sheet in cell.value:
-                            sheet_links[sheet].add(ref_sheet)
+                            sheet_links[ref_sheet].add(sheet)  # Flip the direction of the edge
     
     for sheet in sheet_names:
         if sheet == selected_sheet:
@@ -68,7 +68,7 @@ if uploaded_file:
     
     for sheet, links in sheet_links.items():
         for linked_sheet in links:
-            flow.edge(sheet, linked_sheet)
+            flow.edge(linked_sheet, sheet)  # Flip the direction of the edge
     
     st.graphviz_chart(flow)
     
