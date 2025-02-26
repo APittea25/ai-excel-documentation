@@ -27,38 +27,6 @@ if uploaded_file:
     df = pd.ExcelFile(uploaded_file)
     sheet_names = df.sheet_names
     
-    # Store AI-generated responses in session state
-    if 'ai_responses' not in st.session_state or st.button("🔄 Refresh AI Responses"):
-        st.session_state.ai_responses = {}
-        for sheet in sheet_names:
-            sheet_data = df.parse(sheet)
-            sample_data = sheet_data.head().to_dict()
-            prompt = f"Analyze this Excel sheet and describe its structure, column meanings, and any insights:\n{sample_data}"
-            formula_prompt = f"Generate a Python script using pandas that replicates the formulas in the following Excel sheet:\n{sample_data}\nInclude any necessary calculations that reflect Excel formulas."
-            
-            try:
-                response = client.chat.completions.create(
-                    model="gpt-4",
-                    messages=[{"role": "user", "content": prompt}]
-                )
-                ai_summary = response.choices[0].message.content
-            except Exception as e:
-                ai_summary = f"⚠️ OpenAI API Error: {e}"
-            
-            try:
-                formula_response = client.chat.completions.create(
-                    model="gpt-4",
-                    messages=[{"role": "user", "content": formula_prompt}]
-                )
-                generated_code = formula_response.choices[0].message.content
-            except Exception as e:
-                generated_code = f"⚠️ OpenAI API Error: {e}"
-            
-            st.session_state.ai_responses[sheet] = {
-                "summary": ai_summary,
-                "code": generated_code
-            }
-    
     # Let user select a sheet
     selected_sheet = st.selectbox("Select a sheet", sheet_names)
     sheet_data = df.parse(selected_sheet)
@@ -104,13 +72,40 @@ if uploaded_file:
     
     st.graphviz_chart(flow)
     
-    # Show preloaded AI-generated documentation
-    st.write("### 📝 AI-Generated Documentation")
-    st.write(st.session_state.ai_responses[selected_sheet]["summary"])
+    # Generate AI-powered documentation on demand
+    if selected_sheet not in st.session_state:
+        st.session_state[selected_sheet] = {}
     
-    # Show preloaded AI-generated Python code
+    if "summary" not in st.session_state[selected_sheet] or st.button("🔄 Refresh AI Responses"):
+        sample_data = sheet_data.head().to_dict()
+        prompt = f"Analyze this Excel sheet and describe its structure, column meanings, and any insights:\n{sample_data}"
+        formula_prompt = f"Generate a Python script using pandas that replicates the formulas in the following Excel sheet:\n{sample_data}\nInclude any necessary calculations that reflect Excel formulas."
+        
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[{"role": "user", "content": prompt}]
+            )
+            st.session_state[selected_sheet]["summary"] = response.choices[0].message.content
+        except Exception as e:
+            st.session_state[selected_sheet]["summary"] = f"⚠️ OpenAI API Error: {e}"
+        
+        try:
+            formula_response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[{"role": "user", "content": formula_prompt}]
+            )
+            st.session_state[selected_sheet]["code"] = formula_response.choices[0].message.content
+        except Exception as e:
+            st.session_state[selected_sheet]["code"] = f"⚠️ OpenAI API Error: {e}"
+    
+    # Show AI-generated documentation
+    st.write("### 📝 AI-Generated Documentation")
+    st.write(st.session_state[selected_sheet].get("summary", "No AI response generated yet."))
+    
+    # Show AI-generated Python code
     st.write("### 🖥️ AI-Generated Python Code Replicating Excel Formulas")
-    st.code(st.session_state.ai_responses[selected_sheet]["code"], language='python')
+    st.code(st.session_state[selected_sheet].get("code", "No AI-generated code yet."), language='python')
     
     # Add chat input for follow-up questions
     st.write("### 💬 Ask AI Further Questions")
