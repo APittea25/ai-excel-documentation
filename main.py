@@ -55,7 +55,7 @@ if uploaded_file:
     st.graphviz_chart(flow)
     
     # Generate AI-powered documentation
-    st.write("### 📝 AI-Generated Documentat")
+    st.write("### 📝 AI-Generated Documentation")
     
     # Prepare data for AI
     sample_data = sheet_data.head().to_dict()
