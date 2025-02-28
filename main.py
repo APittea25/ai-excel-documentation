@@ -76,21 +76,35 @@ if uploaded_file:
     st.write("### 🔄 Spreadsheet Flow Diagram")
     flow = graphviz.Digraph()
     
-    # Detect formula-based relationships
+    # Detect formula-based and table-based relationships
     wb = openpyxl.load_workbook(uploaded_file, data_only=False)
     sheet_links = {}
+    table_references = {}
     
     for sheet in sheet_names:
         ws = wb[sheet]
         sheet_links[sheet] = set()
         for row in ws.iter_rows():
             for cell in row:
-                if isinstance(cell.value, str) and cell.value.startswith("="):
-                    for ref_sheet in sheet_names:
-                        if ref_sheet in cell.value:
-                            if ref_sheet not in sheet_links:
-                                sheet_links[ref_sheet] = set()
-                            sheet_links[ref_sheet].add(sheet)
+                if isinstance(cell.value, str):
+                    # Detect direct sheet references
+                    if cell.value.startswith("="):
+                        for ref_sheet in sheet_names:
+                            if ref_sheet in cell.value:
+                                if ref_sheet not in sheet_links:
+                                    sheet_links[ref_sheet] = set()
+                                sheet_links[ref_sheet].add(sheet)
+                    
+                    # Detect table-based references
+                    if "[" in cell.value and "]" in cell.value:
+                        table_name = cell.value.split("[")[0].replace("=", "").strip()
+                        table_references[sheet] = table_references.get(sheet, set()) | {table_name}
+    
+    # Establish connections between sheets based on table references
+    for sheet, tables in table_references.items():
+        for other_sheet in sheet_names:
+            if other_sheet != sheet and any(table in str(wb[other_sheet].values) for table in tables):
+                sheet_links[other_sheet].add(sheet)
     
     for sheet in sheet_names:
         if sheet == selected_sheet:
@@ -104,14 +118,14 @@ if uploaded_file:
     
     st.graphviz_chart(flow)
     
-    # Show AI-generated documentation safely
+    # Show AI-generated documentation
     st.write("### 📝 AI-Generated Documentation")
     if selected_sheet in st.session_state.ai_responses:
         st.write(st.session_state.ai_responses[selected_sheet].get("summary", "⚠️ No AI response available. Try refreshing AI responses."))
     else:
         st.warning(f"⚠️ AI responses not available for '{selected_sheet}'. Try refreshing AI responses.")
 
-    # Show AI-generated Python code safely
+    # Show AI-generated Python code
     st.write("### 🖥️ AI-Generated Python Code Replicating Excel Formulas")
     if selected_sheet in st.session_state.ai_responses:
         st.code(st.session_state.ai_responses[selected_sheet].get("code", "⚠️ No AI-generated code available. Try refreshing AI responses."), language='python')
