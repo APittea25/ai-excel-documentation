@@ -89,7 +89,9 @@ if uploaded_file:
                 if isinstance(cell.value, str) and cell.value.startswith("="):
                     # Detect direct sheet references (e.g., =Sheet2!A1)
                     for ref_sheet in sheet_names:
-                        if re.search(rf'{ref_sheet}!', cell.value, re.IGNORECASE):
+                        if re.search(rf'\b{ref_sheet}!', cell.value, re.IGNORECASE):
+                            if ref_sheet not in sheet_links:
+                                sheet_links[ref_sheet] = set()
                             sheet_links[ref_sheet].add(sheet)
     
     # Generate the flow diagram
