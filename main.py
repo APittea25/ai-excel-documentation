@@ -3,6 +3,7 @@ import pandas as pd
 import openai
 import graphviz
 import openpyxl
+import re
 
 # Get OpenAI API Key from Streamlit Secrets
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
@@ -79,32 +80,44 @@ if uploaded_file:
     # Detect formula-based and table-based relationships
     wb = openpyxl.load_workbook(uploaded_file, data_only=False)
     sheet_links = {}
-    table_references = {}
-    table_to_sheet = {}
     
-    # Step 1: Identify all tables and their respective sheets
+    # Step 1: Detect direct sheet references and structured references
     for sheet in sheet_names:
         ws = wb[sheet]
         sheet_links[sheet] = set()
         for row in ws.iter_rows():
             for cell in row:
-                if isinstance(cell.value, str) and "[" in cell.value and "]" in cell.value:
-                    table_name = cell.value.split("[")[0].replace("=", "").strip()
-                    table_to_sheet[table_name] = sheet
-    
-    # Step 2: Detect references to tables in formulas
-    for sheet in sheet_names:
-        ws = wb[sheet]
-        for row in ws.iter_rows():
-            for cell in row:
                 if isinstance(cell.value, str) and cell.value.startswith("="):
-                    for table_name, table_sheet in table_to_sheet.items():
-                        if table_name in cell.value and table_sheet != sheet:
-                            if table_sheet not in sheet_links:
-                                sheet_links[table_sheet] = set()
-                            sheet_links[table_sheet].add(sheet)
+                    # Detect direct sheet references (e.g., =Sheet2!A1)
+                    for ref_sheet in sheet_names:
+                        if re.search(rf'{ref_sheet}!', cell.value, re.IGNORECASE):
+                            sheet_links[ref_sheet].add(sheet)
+                    
+                    # Detect structured table references (e.g., =Table1[Column])
+                    match = re.search(r'=([A-Za-z0-9_]+)\[', cell.value)
+                    if match:
+                        table_name = match.group(1)
+                        for table_sheet in sheet_names:
+                            if table_name in wb[table_sheet].values:
+                                sheet_links[table_sheet].add(sheet)
+                    
+                    # Detect formula-based references (VLOOKUP, INDEX, MATCH, INDIRECT, HLOOKUP)
+                    function_patterns = [
+                        r'VLOOKUP\(.*?,\s*([^,\s]+)!',
+                        r'INDEX\(.*?,\s*([^,\s]+)!',
+                        r'MATCH\(.*?,\s*([^,\s]+)!',
+                        r'INDIRECT\("([^,\s]+)!',
+                        r'HLOOKUP\(.*?,\s*([^,\s]+)!'
+                    ]
+                    
+                    for pattern in function_patterns:
+                        match = re.search(pattern, cell.value, re.IGNORECASE)
+                        if match:
+                            ref_sheet = match.group(1)
+                            if ref_sheet in sheet_names:
+                                sheet_links[ref_sheet].add(sheet)
     
-    # Step 3: Generate the flow diagram
+    # Step 2: Generate the flow diagram
     for sheet in sheet_names:
         if sheet == selected_sheet:
             flow.node(sheet, color="lightblue", style="filled")
