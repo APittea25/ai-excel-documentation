@@ -80,32 +80,31 @@ if uploaded_file:
     wb = openpyxl.load_workbook(uploaded_file, data_only=False)
     sheet_links = {}
     table_references = {}
+    table_to_sheet = {}
     
+    # Step 1: Identify all tables and their respective sheets
     for sheet in sheet_names:
         ws = wb[sheet]
         sheet_links[sheet] = set()
         for row in ws.iter_rows():
             for cell in row:
-                if isinstance(cell.value, str):
-                    # Detect direct sheet references
-                    if cell.value.startswith("="):
-                        for ref_sheet in sheet_names:
-                            if ref_sheet in cell.value:
-                                if ref_sheet not in sheet_links:
-                                    sheet_links[ref_sheet] = set()
-                                sheet_links[ref_sheet].add(sheet)
-                    
-                    # Detect table-based references
-                    if "[" in cell.value and "]" in cell.value:
-                        table_name = cell.value.split("[")[0].replace("=", "").strip()
-                        table_references[sheet] = table_references.get(sheet, set()) | {table_name}
+                if isinstance(cell.value, str) and "[" in cell.value and "]" in cell.value:
+                    table_name = cell.value.split("[")[0].replace("=", "").strip()
+                    table_to_sheet[table_name] = sheet
     
-    # Establish connections between sheets based on table references
-    for sheet, tables in table_references.items():
-        for other_sheet in sheet_names:
-            if other_sheet != sheet and any(table in str(wb[other_sheet].values) for table in tables):
-                sheet_links[other_sheet].add(sheet)
+    # Step 2: Detect references to tables in formulas
+    for sheet in sheet_names:
+        ws = wb[sheet]
+        for row in ws.iter_rows():
+            for cell in row:
+                if isinstance(cell.value, str) and cell.value.startswith("="):
+                    for table_name, table_sheet in table_to_sheet.items():
+                        if table_name in cell.value and table_sheet != sheet:
+                            if table_sheet not in sheet_links:
+                                sheet_links[table_sheet] = set()
+                            sheet_links[table_sheet].add(sheet)
     
+    # Step 3: Generate the flow diagram
     for sheet in sheet_names:
         if sheet == selected_sheet:
             flow.node(sheet, color="lightblue", style="filled")
