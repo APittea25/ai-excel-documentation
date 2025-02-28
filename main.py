@@ -77,11 +77,10 @@ if uploaded_file:
     st.write("### 🔄 Spreadsheet Flow Diagram")
     flow = graphviz.Digraph()
     
-    # Detect formula-based and table-based relationships
+    # Detect formula-based relationships
     wb = openpyxl.load_workbook(uploaded_file, data_only=False)
     sheet_links = {}
     
-    # Step 1: Detect direct sheet references and structured references
     for sheet in sheet_names:
         ws = wb[sheet]
         sheet_links[sheet] = set()
@@ -92,32 +91,8 @@ if uploaded_file:
                     for ref_sheet in sheet_names:
                         if re.search(rf'{ref_sheet}!', cell.value, re.IGNORECASE):
                             sheet_links[ref_sheet].add(sheet)
-                    
-                    # Detect structured table references (e.g., =Table1[Column])
-                    match = re.search(r'=([A-Za-z0-9_]+)\[', cell.value)
-                    if match:
-                        table_name = match.group(1)
-                        for table_sheet in sheet_names:
-                            if table_name in wb[table_sheet].values:
-                                sheet_links[table_sheet].add(sheet)
-                    
-                    # Detect formula-based references (VLOOKUP, INDEX, MATCH, INDIRECT, HLOOKUP)
-                    function_patterns = [
-                        r'VLOOKUP\(.*?,\s*([^,\s]+)!',
-                        r'INDEX\(.*?,\s*([^,\s]+)!',
-                        r'MATCH\(.*?,\s*([^,\s]+)!',
-                        r'INDIRECT\("([^,\s]+)!',
-                        r'HLOOKUP\(.*?,\s*([^,\s]+)!'
-                    ]
-                    
-                    for pattern in function_patterns:
-                        match = re.search(pattern, cell.value, re.IGNORECASE)
-                        if match:
-                            ref_sheet = match.group(1)
-                            if ref_sheet in sheet_names:
-                                sheet_links[ref_sheet].add(sheet)
     
-    # Step 2: Generate the flow diagram
+    # Generate the flow diagram
     for sheet in sheet_names:
         if sheet == selected_sheet:
             flow.node(sheet, color="lightblue", style="filled")
