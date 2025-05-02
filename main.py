@@ -5,7 +5,7 @@ import graphviz
 import openpyxl
 import re
 
-# Get OpenAI API Key from Streamlit Secrets
+# Get OpenAI API Key from Streamlit Secretsgg
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
 
 # Initialize OpenAI client
