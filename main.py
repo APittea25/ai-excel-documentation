@@ -39,11 +39,29 @@ if uploaded_file:
             prompt = f"Analyze this Excel sheet and describe its structure, column meanings, and any insights:\n{sample_data}"
             # Technical Spec Prompt
             tech_spec_prompt = f"""
-You're an Excel systems analyst. Based on this sample of the '{sheet}' sheet, generate a technical specification:
-- Describe key inputs and their types
-- Outline the calculation logic and dependencies
-- Explain what the outputs represent
-- Note any assumptions or design features
+You're a technical documentation specialist. Based on the sample data from the Excel sheet '{sheet}', generate a technical specification in the following format:
+
+Function Name: <short_identifier_like_sheet_name>
+Description: <brief sentence describing purpose of sheet>
+Inputs:
+- <column>: <type> – <description>
+
+Output:
+<description of expected output columns or final values>
+
+Logic:
+<step-by-step explanation of how calculations are performed, referencing column names>
+
+Assumptions:
+- <list key assumptions in bullet points>
+
+Exceptions:
+- <list any known data risks or validation rules>
+
+Example:
+Input: <example row or structure>
+Output: <expected output for the example>
+
 
 Sample data:
 {sample_data}
