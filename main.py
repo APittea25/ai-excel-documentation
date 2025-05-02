@@ -5,7 +5,7 @@ import graphviz
 import openpyxl
 import re
 
-# Get OpenAI API Key from Streamlit Secretsgg
+# Get OpenAI API Key from Streamlit Secrets
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
 
 # Initialize OpenAI client
@@ -112,7 +112,10 @@ Sample data:
             for cell in row:
                 if isinstance(cell.value, str) and cell.value.startswith("="):
                     for ref_sheet in sheet_names:
-if re.search(rf'\b{ref_sheet}!', cell.value, re.IGNORECASE):
+    if re.search(rf' {ref_sheet}!', cell.value, re.IGNORECASE):
+        if ref_sheet not in sheet_links:
+            sheet_links[ref_sheet] = set()
+        sheet_links[ref_sheet].add(sheet)
                             if ref_sheet not in sheet_links:
                                 sheet_links[ref_sheet] = set()
                             sheet_links[ref_sheet].add(sheet)
