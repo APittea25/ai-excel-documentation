@@ -39,7 +39,7 @@ if uploaded_file:
             
             try:
                 response = client.chat.completions.create(
-                    model="gpt-3.5",
+                    model="gpt-4.0",
                     messages=[{"role": "user", "content": prompt}]
                 )
                 ai_summary = response.choices[0].message.content
@@ -48,7 +48,7 @@ if uploaded_file:
             
             try:
                 formula_response = client.chat.completions.create(
-                    model="gpt-3.5",
+                    model="gpt-4.0",
                     messages=[{"role": "user", "content": formula_prompt}]
                 )
                 generated_code = formula_response.choices[0].message.content
