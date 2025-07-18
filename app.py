@@ -337,7 +337,10 @@ if uploaded_files:
 
     Please return a JSON object like:
     {{
-      "named_range": "Name",
+      "file_name": "MyWorkbook.xlsx",
+      "sheet_name": "Inputs",
+      "excel_range": "B2:D5",
+      "named_range": "MyNamedRange",
       "summary": "Description of what the formula does",
       "general_formula": "for i in range(...): for j in range(...): Result[i][j] = ...",
       "dependencies": ["OtherNamedRange1", "OtherNamedRange2"],
@@ -361,7 +364,19 @@ if uploaded_files:
                 )
                 content = response.choices[0].message.content
                 parsed = json.loads(content)
+                # Get file_name, sheet_name, coord_set for this named range
+                file_name, sheet_name, coord_set, *_ = all_named_ref_info[name]
+
+                # Calculate Excel range
+                min_col_letter = get_column_letter(min([c for (_, c) in coord_set]))
+                max_col_letter = get_column_letter(max([c for (_, c) in coord_set]))
+                min_row_num = min([r for (r, _) in coord_set])
+                max_row_num = max([r for (r, _) in coord_set])
+                excel_range = f"{min_col_letter}{min_row_num}:{max_col_letter}{max_row_num}"
                 parsed["named_range"] = name  # ✅ Ensure correctness
+                parsed["file_name"] = file_name
+                parsed["sheet_name"] = sheet_name
+                parsed["excel_range"] = excel_range
                 summaries[name] = parsed
             except Exception as e:
                 summaries[name] = {"named_range": name,"error": str(e)}
