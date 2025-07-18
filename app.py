@@ -361,9 +361,10 @@ if uploaded_files:
                 )
                 content = response.choices[0].message.content
                 parsed = json.loads(content)
+                parsed["named_range"] = name  # ✅ Ensure correctness
                 summaries[name] = parsed
             except Exception as e:
-                summaries[name] = {"error": str(e)}
+                summaries[name] = {"named_range": name,"error": str(e)}
 
         st.json(summaries)
     else:
