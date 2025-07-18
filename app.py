@@ -335,8 +335,6 @@ if uploaded_files:
     Given the following remapped formulas from an Excel named range, summarize the pattern behind the calculations in a general form.
     Each formula follows a remapped structure using notation like [1][2] to indicate row and column indices.
 
-    Avoid circular dependencies. Do not define Result[i][j] in terms of itself. If formulas show Result[i][j] = Result[i-1][j] + X, explain that explicitly.
-
     Please return a JSON object like:
     {{
       "file_name": "MyWorkbook.xlsx",
