@@ -364,6 +364,7 @@ if uploaded_files:
                 )
                 content = response.choices[0].message.content
                 parsed = json.loads(content)
+                
                 # Get file_name, sheet_name, coord_set for this named range
                 file_name, sheet_name, coord_set, *_ = all_named_ref_info[name]
 
@@ -373,10 +374,12 @@ if uploaded_files:
                 min_row_num = min([r for (r, _) in coord_set])
                 max_row_num = max([r for (r, _) in coord_set])
                 excel_range = f"{min_col_letter}{min_row_num}:{max_col_letter}{max_row_num}"
+                
                 parsed["named_range"] = name  # ✅ Ensure correctness
                 parsed["file_name"] = file_name
                 parsed["sheet_name"] = sheet_name
                 parsed["excel_range"] = excel_range
+                parsed["dependencies"] = sorted(dependencies.get(name, []))
                 summaries[name] = parsed
             except Exception as e:
                 summaries[name] = {"named_range": name,"error": str(e)}
