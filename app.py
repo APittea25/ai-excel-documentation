@@ -10,6 +10,10 @@ from docx import Document
 
 st.set_page_config(page_title="Named Range Formula Remapper", layout="wide")
 
+# ✅ Step 1: Add this here
+if "json_summaries" not in st.session_state:
+    st.session_state.json_summaries = None
+
 # Print mode controls
 if "print_mode" not in st.session_state:
     st.session_state.print_mode = "full"
@@ -412,7 +416,9 @@ if uploaded_files:
             file_name="named_range_summary.docx",
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
-
+        
+        st.session_state.json_summaries = summaries
+        
     else:
         st.info("Press the button above to generate a GPT-based JSON summary of calculations.")
 
