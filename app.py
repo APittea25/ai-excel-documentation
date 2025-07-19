@@ -384,6 +384,7 @@ if uploaded_files:
             except Exception as e:
                 summaries[name] = {"named_range": name,"error": str(e)}
 
+    with st.expander("📦 View JSON Output", expanded=False):
         st.json(summaries)
     else:
         st.info("Press the button above to generate a GPT-based JSON summary of calculations.")
