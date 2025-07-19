@@ -416,9 +416,7 @@ if uploaded_files:
             file_name="named_range_summary.docx",
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
-        
-        st.session_state.json_summaries = summaries
-        
+
     else:
         st.info("Press the button above to generate a GPT-based JSON summary of calculations.")
 
