@@ -4,3 +4,4 @@ openai
 openpyxl
 xlrd
 graphviz
+python-docx
