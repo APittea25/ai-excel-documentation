@@ -392,6 +392,9 @@ if uploaded_files:
         with st.expander("📦 View JSON Output", expanded=False):
             st.json(summaries)
 
+        with st.expander("📄 Spreadsheet Document", expanded=False):
+            st.markdown("_This section will be populated later._")
+
         # JSON download
         json_str = json.dumps(summaries, indent=2)
         st.download_button("📥 Download JSON Summary", data=json_str, file_name="named_range_summaries.json", mime="application/json")
