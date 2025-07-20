@@ -7,6 +7,7 @@ import os
 from collections import defaultdict
 import graphviz
 from docx import Document
+import pandas as pd
 
 st.set_page_config(page_title="Named Range Formula Remapper", layout="wide")
 
