@@ -393,7 +393,7 @@ if uploaded_files:
         with st.expander("📦 View JSON Output", expanded=False):
             st.json(summaries)
 
-        #prepare context for documentation
+        #prepare content for documentation
 
         #input data
         input_summaries = {k: v for k, v in summaries.items() if k.startswith("i_")}
@@ -412,11 +412,19 @@ if uploaded_files:
         for row in inputs_data:
             prompt = f"""You are an expert actuary and survival modeller.
 
-        This named range `{row['Name']}` is used as an input in the context of the Lee-Carter model or other survival modelling work.
+        You're documenting a spreadsheet input named `{input_name}`, located in sheet `{sheet}`, cell range `{excel_range}`.
 
-        Please describe what this input likely represents, and its role in the model, based on its name alone.
+        Its name suggests it's related to: "{input_name}"
 
-        Respond with 1–2 sentences of natural explanation."""
+        Here is the description of how this input is used in the model:
+        "{json_summary}"
+
+        And the general formula pattern that references it:
+        "{general_formula}"
+
+        Based on this, describe what `{input_name}` represents and its role in the model, using clear and confident actuarial language. Do not use words like "might", "possibly", or "likely".
+
+        Respond with 1–2 precise sentences."""
 
             try:
                 response = client.chat.completions.create(
@@ -473,6 +481,9 @@ if uploaded_files:
 
             # Inputs table
             st.header("## Inputs")
+            row_height = 35
+            max_height = 500
+            calculated_height = min(len(inputs_df) * row_height + 35, max_height)
             st.dataframe(inputs_df, use_container_width=True)
 
             # Outputs
