@@ -410,7 +410,7 @@ if uploaded_files:
 
         # GPT to populate Info field
         for row in inputs_data:
-        prompt = f"""You are an expert actuary and survival modeller.
+            prompt = f"""You are an expert actuary and survival modeller.
 
         This named range `{row['Name']}` is used as an input in the context of the Lee-Carter model or other survival modelling work.
 
