@@ -381,7 +381,7 @@ if uploaded_files:
                 max_row_num = max([r for (r, _) in coord_set])
                 excel_range = f"{min_col_letter}{min_row_num}:{max_col_letter}{max_row_num}"
                 
-                parsed["named_range"] = name  # ✅ Ensure correctness
+                parsed["named_range"] = name  
                 parsed["file_name"] = file_name
                 parsed["sheet_name"] = sheet_name
                 parsed["excel_range"] = excel_range
@@ -410,6 +410,12 @@ if uploaded_files:
 
         # GPT to populate Info field
         for row in inputs_data:
+            input_name = row["Name"]
+            summary_json = input_summaries[input_name]
+            json_summary = summary_json.get("summary", "")
+            general_formula = summary_json.get("general_formula", "")
+            sheet = summary_json.get("sheet_name", "")
+            excel_range = summary_json.get("excel_range", "")
             prompt = f"""You are an expert actuary and survival modeller.
 
         You're documenting a spreadsheet input named `{input_name}`, located in sheet `{sheet}`, cell range `{excel_range}`.
