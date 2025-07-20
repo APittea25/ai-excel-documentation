@@ -527,6 +527,55 @@ if uploaded_files:
                     value = json.dumps(value, indent=2)
                 doc.add_paragraph(f"{key}: {value}")
 
+        # 🧾 Add Spreadsheet Document content to Word
+        doc.add_page_break()
+        doc.add_heading("📄 Spreadsheet Documentation", 0)
+
+        # Version Control
+        doc.add_heading("Version Control", level=1)
+        doc.add_heading("Model Version Control", level=2)
+        for col in model_version_df.columns:
+            doc.add_paragraph(f"{col}: __________")
+
+        doc.add_heading("Documentation Version Control", level=2)
+        for col in doc_version_df.columns:
+            doc.add_paragraph(f"{col}: __________")
+
+        # Ownership
+        doc.add_heading("Ownership", level=1)
+        doc.add_paragraph("Owner: __________")
+        doc.add_paragraph("Risk rating (or other client control standard): __________")
+        doc.add_paragraph("Internal audit history: __________")
+
+        # Purpose
+        doc.add_heading("Purpose", level=1)
+        doc.add_paragraph("Describe the purpose of the model:")
+
+        # Inputs Table
+        doc.add_heading("Inputs", level=1)
+        for row in inputs_data:
+            doc.add_paragraph(
+                f"No: {row['No.']}, Name: {row['Name']}, Type: {row['Type']}, "
+                f"Source: {row['Source']}, Info: {row['Info']}"
+            )
+
+        # Other sections
+        doc.add_heading("Outputs", level=1)
+        doc.add_paragraph("Describe the outputs of the model:")
+
+        doc.add_heading("Logic", level=1)
+        doc.add_paragraph("Describe the logic used in the model:")
+
+        doc.add_heading("Checks and Validation", level=1)
+        doc.add_paragraph("Describe the checks and validation steps:")
+
+        doc.add_heading("Assumptions and Limitations", level=1)
+        doc.add_paragraph("List assumptions and limitations:")
+
+        doc.add_heading("TAS Compliance", level=1)
+        doc.add_paragraph("Describe how the model complies with TAS:")
+
+        
         docx_io = BytesIO()
         doc.save(docx_io)
         docx_io.seek(0)
