@@ -393,6 +393,45 @@ if uploaded_files:
         with st.expander("📦 View JSON Output", expanded=False):
             st.json(summaries)
 
+        #prepare context for documentation
+
+        #input data
+        input_summaries = {k: v for k, v in summaries.items() if k.startswith("i_")}
+        inputs_data = []
+        for idx, (name, summary) in enumerate(input_summaries.items(), start=1):
+            source_file = summary.get("file_name", "")
+            inputs_data.append({
+                "No.": idx,
+                "Name": name,
+                "Type": "",
+                "Source": source_file,
+                "Info": ""  # To be filled by GPT
+            })
+
+        # GPT to populate Info field
+        for row in inputs_data:
+        prompt = f"""You are an expert actuary and survival modeller.
+
+        This named range `{row['Name']}` is used as an input in the context of the Lee-Carter model or other survival modelling work.
+
+        Please describe what this input likely represents, and its role in the model, based on its name alone.
+
+        Respond with 1–2 sentences of natural explanation."""
+
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4",
+                    messages=[
+                        {"role": "system", "content": "You provide concise descriptions of actuarial inputs."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.3
+                )
+                row["Info"] = response.choices[0].message.content.strip()
+            except Exception as e:
+                row["Info"] = f"Error: {e}"
+        inputs_df = pd.DataFrame(inputs_data)
+        
         with st.expander("📄 Spreadsheet Document", expanded=False):
             st.title("📄 Model Documentation")
 
@@ -434,13 +473,6 @@ if uploaded_files:
 
             # Inputs table
             st.header("## Inputs")
-            inputs_df = pd.DataFrame({
-                "No.": [""],
-                "Name": [""],
-                "Type": [""],
-                "Source": [""],
-                "Info": [""]
-            })
             st.dataframe(inputs_df, use_container_width=True)
 
             # Outputs
