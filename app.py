@@ -536,6 +536,70 @@ if uploaded_files:
 
         outputs_df = pd.DataFrame(outputs_data)
 
+        # --- Logic documentation based on _c1_, _c2_, etc. ---
+
+
+        logic_summaries = {}
+        logic_pattern = re.compile(r"^_c(\d+)_$")  # matches _c1_, _c2_, etc.
+
+        # Extract and sort logic blocks
+        for name in summaries:
+            match = logic_pattern.match(name)
+            if match:
+                step_number = int(match.group(1))
+                logic_summaries[step_number] = name
+
+        logic_steps = []
+        for step_number in sorted(logic_summaries):
+            name = logic_summaries[step_number]
+            summary_json = summaries[name]
+            json_summary = summary_json.get("summary", "")
+            general_formula = summary_json.get("general_formula", "")
+            dependencies_list = summary_json.get("dependencies", [])
+            excel_range = summary_json.get("excel_range", "")
+            sheet = summary_json.get("sheet_name", "")
+
+            prompt = f"""You are an expert actuary and spreadsheet modeller.
+
+        You are documenting part of a model's logic, which is based on the **Lee-Carter mortality model** (or a closely related framework).
+
+        This step is labelled `{name}`, located in sheet `{sheet}`, Excel range `{excel_range}`. It appears in the calculation order as step {step_number}.
+
+        Here is the system-generated summary of what this logic block does:
+        "{json_summary}"
+
+        Here is the generalised formula that describes the logic:
+        "{general_formula}"
+
+        It depends on the following components: {', '.join(dependencies_list) if dependencies_list else 'none'}.
+
+        Using clear and authoritative actuarial language, describe the role of this logic step within the broader model, focusing on its purpose and dependencies.
+
+        Respond with 1–2 precise sentences."""
+
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4",
+                    messages=[
+                        {"role": "system", "content": "You describe logic steps in actuarial models clearly."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.3
+                )
+                explanation = response.choices[0].message.content.strip()
+            except Exception as e:
+                explanation = f"Error generating description: {e}"
+
+            logic_steps.append({
+                "Step": step_number,
+                "Named Range": name,
+                "Description": explanation
+            })
+
+        # If no _cN_ logic blocks found, issue warning
+        if not logic_steps:
+            st.warning("⚠️ No logic components found using `_c1_`, `_c2_`, etc. naming convention. Please check that named ranges follow this format.")
+
     
         with st.expander("📄 Spreadsheet Document", expanded=False):
             st.title("📄 Model Documentation")
@@ -589,7 +653,11 @@ if uploaded_files:
 
             # Logic
             st.header("## Logic")
-            st.text_area("Describe the logic used in the model:")
+            if logic_steps:
+                logic_df = pd.DataFrame(logic_steps)
+                st.dataframe(logic_df, use_container_width=True)
+            else:
+                st.warning("⚠️ No logic documented. Ensure named ranges follow `_c1_`, `_c2_`, ... convention.")
 
             # Checks and validation
             st.header("## Checks and Validation")
@@ -683,7 +751,22 @@ if uploaded_files:
             row_cells[2].text = row["Description"]
 
         doc.add_heading("Logic", level=1)
-        doc.add_paragraph("Describe the logic used in the model:")
+        if logic_steps:
+            table = doc.add_table(rows=1, cols=3)
+            table.autofit = True
+            table.style = "Table Grid"
+            hdr_cells = table.rows[0].cells
+            hdr_cells[0].text = "Step"
+            hdr_cells[1].text = "Named Range"
+            hdr_cells[2].text = "Description"
+
+            for row in logic_steps:
+                row_cells = table.add_row().cells
+                row_cells[0].text = str(row["Step"])
+                row_cells[1].text = row["Named Range"]
+                row_cells[2].text = row["Description"]
+        else:
+            doc.add_paragraph("⚠ No logic components found with the expected `_cN_` naming pattern.")
 
         doc.add_heading("Checks and Validation", level=1)
         doc.add_paragraph("Describe the checks and validation steps:")
