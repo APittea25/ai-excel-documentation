@@ -485,7 +485,58 @@ if uploaded_files:
             except Exception as e:
                 row["Info"] = f"Error: {e}"
         inputs_df = pd.DataFrame(inputs_data)
-        
+
+        # --- Output data ---
+        output_summaries = {k: v for k, v in summaries.items() if k.startswith("o_")}
+        outputs_data = []
+        for idx, (name, summary) in enumerate(output_summaries.items(), start=1):
+            outputs_data.append({
+                "No.": idx,
+                "Name": name,
+                "Description": ""  # To be filled by GPT
+            })
+
+        # GPT to populate output descriptions
+        for row in outputs_data:
+            output_name = row["Name"]
+            summary_json = output_summaries[output_name]
+            json_summary = summary_json.get("summary", "")
+            general_formula = summary_json.get("general_formula", "")
+            sheet = summary_json.get("sheet_name", "")
+            excel_range = summary_json.get("excel_range", "")
+
+            prompt = f"""You are an expert actuary and survival modeller.
+
+        You are reviewing a spreadsheet output named `{output_name}`, located in sheet `{sheet}`, cell range `{excel_range}`.
+
+        Here is the description of how this output is used in the model:
+        "{json_summary}"
+
+        And here is the general formula pattern that defines it:
+        "{general_formula}"
+
+        This model is based on the **Lee-Carter mortality model** or a related survival framework.
+
+        Describe in clear actuarial language what `{output_name}` represents and its role in the output of the model. Be confident and specific. Avoid words like "might", "likely", or "possibly".
+
+        Respond with 1–2 precise sentences."""
+
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4",
+                    messages=[
+                        {"role": "system", "content": "You describe actuarial spreadsheet outputs."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.3
+                )
+                row["Description"] = response.choices[0].message.content.strip()
+            except Exception as e:
+                row["Description"] = f"Error: {e}"
+
+        outputs_df = pd.DataFrame(outputs_data)
+
+    
         with st.expander("📄 Spreadsheet Document", expanded=False):
             st.title("📄 Model Documentation")
 
@@ -534,7 +585,7 @@ if uploaded_files:
 
             # Outputs
             st.header("## Outputs")
-            st.text_area("Describe the outputs of the model:")
+            st.dataframe(outputs_df, use_container_width=True)
 
             # Logic
             st.header("## Logic")
@@ -616,7 +667,20 @@ if uploaded_files:
 
         # Other sections
         doc.add_heading("Outputs", level=1)
-        doc.add_paragraph("Describe the outputs of the model:")
+        table = doc.add_table(rows=1, cols=3)
+        table.autofit = True
+        table.style = "Table Grid"
+
+        hdr_cells = table.rows[0].cells
+        hdr_cells[0].text = "No."
+        hdr_cells[1].text = "Name"
+        hdr_cells[2].text = "Description"
+
+        for row in outputs_data:
+            row_cells = table.add_row().cells
+            row_cells[0].text = str(row["No."])
+            row_cells[1].text = row["Name"]
+            row_cells[2].text = row["Description"]
 
         doc.add_heading("Logic", level=1)
         doc.add_paragraph("Describe the logic used in the model:")
