@@ -540,7 +540,7 @@ if uploaded_files:
 
 
         logic_summaries = {}
-        logic_pattern = re.compile(r"^_c(\d+)_$")  # matches _c1_, _c2_, etc.
+        logic_pattern = re.compile(r"^_c(\d+)_.*")  # matches _c1_, _c2_, etc.
 
         # Extract and sort logic blocks
         for name in summaries:
