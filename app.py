@@ -393,7 +393,74 @@ if uploaded_files:
             st.json(summaries)
 
         with st.expander("📄 Spreadsheet Document", expanded=False):
-            st.markdown("_This section will be populated later._")
+            st.title("📄 Model Documentation")
+
+            st.header("## Version Control")
+
+            # Model version control table
+            st.subheader("### Model Version Control")
+            model_version_df = pd.DataFrame({
+                "Version": [""],
+                "Date": ["00/00/0000"],
+                "Info": [""],
+                "Updated by": [""],
+                "Reviewed by": [""],
+                "Review Date": [""]
+            })
+            st.dataframe(model_version_df, use_container_width=True)
+
+            # Documentation version control table
+            st.subheader("### Documentation Version Control")
+            doc_version_df = pd.DataFrame({
+                "Version": [""],
+                "Date": ["00/00/0000"],
+                "Info": [""],
+                "Updated by": [""],
+                "Reviewed by": [""],
+                "Review Date": [""]
+            })
+            st.dataframe(doc_version_df, use_container_width=True)
+
+            # Ownership section
+            st.header("## Ownership")
+            st.text("### Owner")
+            st.text("### Risk rating (or other client control standard)")
+            st.text("### Internal audit history")
+
+            # Purpose
+            st.header("## Purpose")
+            st.text_area("Describe the purpose of the model:")
+
+            # Inputs table
+            st.header("## Inputs")
+            inputs_df = pd.DataFrame({
+                "No.": [""],
+                "Name": [""],
+                "Type": [""],
+                "Source": [""],
+                "Info": [""]
+            })
+            st.dataframe(inputs_df, use_container_width=True)
+
+            # Outputs
+            st.header("## Outputs")
+            st.text_area("Describe the outputs of the model:")
+
+            # Logic
+            st.header("## Logic")
+            st.text_area("Describe the logic used in the model:")
+
+            # Checks and validation
+            st.header("## Checks and Validation")
+            st.text_area("Describe the checks and validation steps:")
+
+            # Assumptions and limitations
+            st.header("## Assumptions and Limitations")
+            st.text_area("List assumptions and limitations:")
+
+            # TAS Compliance
+            st.header("## TAS Compliance")
+            st.text_area("Describe how the model complies with TAS:")
 
         # JSON download
         json_str = json.dumps(summaries, indent=2)
