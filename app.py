@@ -395,6 +395,45 @@ if uploaded_files:
 
         #prepare content for documentation
 
+        # --- Generate high-level Purpose description ---
+        try:
+            joined_descriptions = "\n".join(
+                f"{k}: {v.get('summary', '')}" for k, v in summaries.items() if "summary" in v
+            )
+            joined_formulas = "\n".join(
+                f"{k}: {v.get('general_formula', '')}" for k, v in summaries.items() if "general_formula" in v
+            )
+
+            purpose_prompt = f"""You are an expert actuary and survival modeller.
+
+        You are reviewing an Excel model based on the **Lee-Carter mortality model** (or a related framework for projecting mortality rates).
+
+        Here are the descriptions of how various named ranges are used in the model:
+
+        {joined_descriptions}
+
+        And here are the general formula patterns from the model:
+
+        {joined_formulas}
+
+        Based on this, provide a concise and high-level purpose statement for the spreadsheet model — 2–3 sentences describing what it calculates and its overall objective.
+        Use clear actuarial language without uncertainty (avoid words like 'might', 'possibly', 'likely').
+        """
+
+            purpose_response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "You write purpose sections for actuarial models."},
+                    {"role": "user", "content": purpose_prompt}
+                ],
+                temperature=0.3
+            )
+
+            model_purpose = purpose_response.choices[0].message.content.strip()
+
+        except Exception as e:
+            model_purpose = f"Error generating purpose: {e}"
+        
         #input data
         input_summaries = {k: v for k, v in summaries.items() if k.startswith("i_")}
         inputs_data = []
@@ -484,7 +523,7 @@ if uploaded_files:
 
             # Purpose
             st.header("## Purpose")
-            st.text_area("Describe the purpose of the model:")
+            st.text_area("Describe the purpose of the model:", value=model_purpose)
 
             # Inputs table
             st.header("## Inputs")
@@ -549,7 +588,7 @@ if uploaded_files:
 
         # Purpose
         doc.add_heading("Purpose", level=1)
-        doc.add_paragraph("Describe the purpose of the model:")
+        doc.add_paragraph(model_purpose)
 
         # Inputs Table
         # Inputs Table (formatted as a Word table)
