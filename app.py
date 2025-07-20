@@ -337,7 +337,7 @@ if uploaded_files:
 
             prompt = f"""
     You are an expert actuary and spreadsheet analyst.
-
+   
     Given the following remapped formulas from an Excel named range, summarize the pattern behind the calculations in a general form.
     Each formula follows a remapped structure using notation like [1][2] to indicate row and column indices.
 
@@ -417,7 +417,8 @@ if uploaded_files:
             sheet = summary_json.get("sheet_name", "")
             excel_range = summary_json.get("excel_range", "")
             prompt = f"""You are an expert actuary and survival modeller.
-
+        You are reviewing a spreadsheet model based on the **Lee-Carter mortality model** (or a closely related survival model).
+        
         You're documenting a spreadsheet input named `{input_name}`, located in sheet `{sheet}`, cell range `{excel_range}`.
 
         Its name suggests it's related to: "{input_name}"
