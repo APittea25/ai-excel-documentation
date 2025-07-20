@@ -552,12 +552,28 @@ if uploaded_files:
         doc.add_paragraph("Describe the purpose of the model:")
 
         # Inputs Table
+        # Inputs Table (formatted as a Word table)
         doc.add_heading("Inputs", level=1)
+        table = doc.add_table(rows=1, cols=5)
+        table.autofit = True
+        table.style = "Table Grid"
+
+        # Add table headers
+        hdr_cells = table.rows[0].cells
+        hdr_cells[0].text = "No."
+        hdr_cells[1].text = "Name"
+        hdr_cells[2].text = "Type"
+        hdr_cells[3].text = "Source"
+        hdr_cells[4].text = "Info"
+
+        # Add data rows
         for row in inputs_data:
-            doc.add_paragraph(
-                f"No: {row['No.']}, Name: {row['Name']}, Type: {row['Type']}, "
-                f"Source: {row['Source']}, Info: {row['Info']}"
-            )
+            row_cells = table.add_row().cells
+            row_cells[0].text = str(row["No."])
+            row_cells[1].text = row["Name"]
+            row_cells[2].text = row["Type"]
+            row_cells[3].text = row["Source"]
+            row_cells[4].text = row["Info"]
 
         # Other sections
         doc.add_heading("Outputs", level=1)
