@@ -580,8 +580,7 @@ if uploaded_files:
         2. What is the calculations and how it contributes to the projection.
         3. Any key inputs or dependencies used in this step.
 
-        Avoid vague language like 'might' or 'possibly' — be concise and clear."""
-        
+        Avoid vague language like 'might' or 'possibly' — be concise and clear.
 
         Respond with 1-2 precise sentences."""
 
