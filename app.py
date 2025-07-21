@@ -561,19 +561,27 @@ if uploaded_files:
 
             prompt = f"""You are an expert actuary and spreadsheet modeller.
 
-        You are documenting part of a model's logic, which is based on the **Lee-Carter mortality model** (or a closely related framework).
+        You are reviewing a calculation step in an Excel-based actuarial model built on the Lee-Carter mortality framework.
 
-        This step is labelled `{name}`, located in sheet `{sheet}`, Excel range `{excel_range}`. It appears in the calculation order as step {step_number}.
+        The named range for this step is `{step_name}` (step {step_number}), and it represents a key stage in the spreadsheet's logic.
 
-        Here is the system-generated summary of what this logic block does:
+        Here is the general description of this calculation step:
         "{json_summary}"
 
-        Here is the generalised formula that describes the logic:
+        And here is the general formula logic:
         "{general_formula}"
 
-        It depends on the following components: {', '.join(dependencies_list) if dependencies_list else 'none'}.
+        This step depends on the following named ranges:
+        {', '.join(dependencies)}
 
-        Using clear and authoritative actuarial language, describe the role of this logic step within the broader model, focusing on its purpose and dependencies.
+        Please write 2–3 precise and confident sentences that explain:
+
+        1. The purpose of this calculation step in the model.
+        2. What is the calculations and how it contributes to the projection.
+        3. Any key inputs or dependencies used in this step.
+
+        Avoid vague language like 'might' or 'possibly' — be concise and clear."""
+        
 
         Respond with 1–2 precise sentences."""
 
