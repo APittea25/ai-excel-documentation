@@ -583,7 +583,7 @@ if uploaded_files:
         Avoid vague language like 'might' or 'possibly' — be concise and clear."""
         
 
-        Respond with 1–2 precise sentences."""
+        Respond with 1-2 precise sentences."""
 
             try:
                 response = client.chat.completions.create(
