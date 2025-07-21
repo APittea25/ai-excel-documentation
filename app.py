@@ -563,7 +563,7 @@ if uploaded_files:
 
         You are reviewing a calculation step in an Excel-based actuarial model built on the Lee-Carter mortality framework.
 
-        The named range for this step is `{step_name}` (step {step_number}), and it represents a key stage in the spreadsheet's logic.
+        The named range for this step is `{name}` (step {step_number}), and it represents a key stage in the spreadsheet's logic.
 
         Here is the general description of this calculation step:
         "{json_summary}"
