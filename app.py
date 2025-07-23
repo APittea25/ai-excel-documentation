@@ -25,15 +25,9 @@ def set_full():
 def set_summary():
     st.session_state.print_mode = "summary"
 
-col1, col2 = st.columns(2)
-with col1:
-    st.button("🖨️ Print Full", on_click=set_full)
-with col2:
-    st.button("🖨️ Print Summary (first 50 lines)", on_click=set_summary)
-
 st.write(f"**Current print mode:** {st.session_state.print_mode}")
 
-st.title("\U0001F4D8 Named Range Coordinates + Formula Remapping")
+st.title("\U0001F4D8 AI Powered Spreadsheet Documentation")
 
 if "expanded_all" not in st.session_state:
     st.session_state.expanded_all = False
