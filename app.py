@@ -281,6 +281,7 @@ if uploaded_files:
 
     st.graphviz_chart(dot)
 # --- JSON Summary Generation Section ---
+    
     st.subheader("🧠 Generate JSON and Documentation")
 
     generate_json = st.button("🧾 Generate")
@@ -759,7 +760,7 @@ if uploaded_files:
         )
 
     else:
-        st.info("Press the button above to generate a GPT-based JSON summary of calculations.")
+        st.info("Press the button above to generate a GPT-based JSON and Documentation.")
 
 else:
     st.info("⬆️ Upload one or more .xlsx files to begin.")
