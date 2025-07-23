@@ -15,18 +15,6 @@ st.set_page_config(page_title="Named Range Formula Remapper", layout="wide")
 if "json_summaries" not in st.session_state:
     st.session_state.json_summaries = None
 
-# Print mode controls
-if "print_mode" not in st.session_state:
-    st.session_state.print_mode = "full"
-
-def set_full():
-    st.session_state.print_mode = "full"
-
-def set_summary():
-    st.session_state.print_mode = "summary"
-
-st.write(f"**Current print mode:** {st.session_state.print_mode}")
-
 st.title("\U0001F4D8 AI Powered Spreadsheet Documentation")
 
 if "expanded_all" not in st.session_state:
