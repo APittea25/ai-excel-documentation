@@ -26,13 +26,15 @@ def toggle():
 st.button("🔁 Expand / Collapse All Named Ranges", on_click=toggle)
 
 # Allow manual mapping of external references like [1], [2], etc.
-st.subheader("Manual Mapping for External References")
-external_refs = {}
-for i in range(1, 10):
-    ref_key = f"[{i}]"
-    workbook_name = st.text_input(f"Map external reference {ref_key} to workbook name (e.g., Mortality_Model_Inputs.xlsx)", key=ref_key)
-    if workbook_name:
-        external_refs[ref_key] = workbook_name
+
+with st.expander("🔧 Manual Mapping for External References", expanded=False):
+    st.subheader("Manual Mapping for External References")
+    external_refs = {}
+    for i in range(1, 10):
+        ref_key = f"[{i}]"
+        workbook_name = st.text_input(f"Map external reference {ref_key} to workbook name (e.g., Mortality_Model_Inputs.xlsx)", key=ref_key)
+        if workbook_name:
+            external_refs[ref_key] = workbook_name
 
 uploaded_files = st.file_uploader("\U0001F4C2 Upload Excel files", type=["xlsx"], accept_multiple_files=True)
 
