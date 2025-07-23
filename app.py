@@ -218,8 +218,8 @@ if uploaded_files:
 
         named_ref_formulas[name] = formulas_for_graph
         
-        #limit = None if st.session_state.print_mode == "full" else 50
-        #snippet = entries if limit is None else entries[:limit]
+        limit = 50
+        snippet = entries if limit is None else entries[:limit]
         
         with st.expander(
             f"📌 Named Range: {name} → {sheet_name} in {file_name}",
