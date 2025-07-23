@@ -281,9 +281,9 @@ if uploaded_files:
 
     st.graphviz_chart(dot)
 # --- JSON Summary Generation Section ---
-    st.subheader("🧠 AI-Powered JSON Summary of Named Range Calculations")
+    st.subheader("🧠 Generate JSON and Documentation")
 
-    generate_json = st.button("🧾 Generate Summarised JSON Output")
+    generate_json = st.button("🧾 Generate")
 
     if generate_json:
         from openai import OpenAI
