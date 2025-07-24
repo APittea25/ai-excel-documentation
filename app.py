@@ -409,10 +409,13 @@ if uploaded_files:
 
             # Determine type based on excel_range
             if ":" not in excel_range:
-                cell_type = "Cell"
-            else:
-                try:
-                    from_cell, to_cell = excel_range.split(":")
+            cell_type = "Error"  # invalid or incomplete range
+        else:
+            try:
+                from_cell, to_cell = excel_range.split(":")
+                if from_cell == to_cell:
+                    cell_type = "Cell"
+                else:
                     from_col = re.sub(r"\d", "", from_cell)
                     from_row = int(re.sub(r"\D", "", from_cell))
                     to_col = re.sub(r"\d", "", to_cell)
@@ -424,8 +427,8 @@ if uploaded_files:
                         cell_type = "Vector"  # horizontal
                     else:
                         cell_type = "Table"
-                except Exception:
-                    cell_type = "Unknown"
+            except Exception:
+                cell_type = "Error"
 
             inputs_data.append({
                 "No.": idx,
