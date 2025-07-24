@@ -397,39 +397,43 @@ if uploaded_files:
         except Exception as e:
             model_purpose = f"Error generating purpose: {e}"
 
-        # Determine Type based on excel_range
-        excel_range = summary.get("excel_range", "")
-        cell_type = "Unknown"
-
-        if ":" not in excel_range:
-            cell_type = "Cell"
-        else:
-            from_cell, to_cell = excel_range.split(":")
-            from_col = re.sub(r"\d", "", from_cell)
-            from_row = int(re.sub(r"\D", "", from_cell))
-            to_col = re.sub(r"\d", "", to_cell)
-            to_row = int(re.sub(r"\D", "", to_cell))
-
-            if from_col == to_col:
-                cell_type = "Vector"  # Vertical
-            elif from_row == to_row:
-                cell_type = "Vector"  # Horizontal
-            else:
-                cell_type = "Table"
         
-        #input data
+        # input data
         input_summaries = {k: v for k, v in summaries.items() if k.startswith("i_")}
         inputs_data = []
+
         for idx, (name, summary) in enumerate(input_summaries.items(), start=1):
             source_file = summary.get("file_name", "")
+            excel_range = summary.get("excel_range", "")
+            cell_type = "Unknown"
+
+            # Determine type based on excel_range
+            if ":" not in excel_range:
+                cell_type = "Cell"
+            else:
+                try:
+                    from_cell, to_cell = excel_range.split(":")
+                    from_col = re.sub(r"\d", "", from_cell)
+                    from_row = int(re.sub(r"\D", "", from_cell))
+                    to_col = re.sub(r"\d", "", to_cell)
+                    to_row = int(re.sub(r"\D", "", to_cell))
+
+                    if from_col == to_col:
+                        cell_type = "Vector"  # vertical
+                    elif from_row == to_row:
+                        cell_type = "Vector"  # horizontal
+                    else:
+                        cell_type = "Table"
+                except Exception:
+                    cell_type = "Unknown"
+
             inputs_data.append({
                 "No.": idx,
                 "Name": name,
-                "Type": "",
+                "Type": cell_type,
                 "Source": source_file,
                 "Info": ""  # To be filled by GPT
             })
-
         # GPT to populate Info field
         for row in inputs_data:
             input_name = row["Name"]
