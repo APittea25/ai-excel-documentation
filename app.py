@@ -661,8 +661,43 @@ if uploaded_files:
 
         # Convert to DataFrame for Streamlit and Word doc
         checks_df = pd.DataFrame(check_data)
+
+        # --- Assumptions and Limitations ---
+        try:
+            all_summaries = "\n".join(
+                f"{k}: {v.get('summary', '')}" for k, v in summaries.items() if "summary" in v
+            )
+            all_formulas = "\n".join(
+                f"{k}: {v.get('general_formula', '')}" for k, v in summaries.items() if "general_formula" in v
+            )
+
+            assumptions_prompt = f"""You are an expert actuary and spreadsheet modeller reviewing a workbook based on the Lee-Carter mortality model.
+
+        Below are summaries and formulas used in various named ranges of the model:
+
+        Summaries:
+        {all_summaries}
+
+        Formulas:
+        {all_formulas}
+
+        From this information, write a concise paragraph that lists the **key assumptions** underlying this spreadsheet model (e.g., trends, input behaviour, mortality evolution), and any **notable limitations or simplifications** (e.g., no sensitivity testing, static inputs, deterministic projections).
+
+        Avoid vague language like "possibly" or "might". Use confident and professional actuarial language."""
+
+            assumptions_response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "You describe assumptions and limitations in actuarial spreadsheet models."},
+                    {"role": "user", "content": assumptions_prompt}
+                ],
+                temperature=0.3
+            )
+            assumptions_text = assumptions_response.choices[0].message.content.strip()
+
+        except Exception as e:
+            assumptions_text = f"Error generating assumptions and limitations: {e}"
         
-    
         with st.expander("📄 Spreadsheet Document", expanded=False):
             st.title("📄 Model Documentation")
 
@@ -730,7 +765,7 @@ if uploaded_files:
 
             # Assumptions and limitations
             st.header("## Assumptions and Limitations")
-            st.text_area("List assumptions and limitations:")
+            st.text_area("List assumptions and limitations:", value=assumptions_text, height=200)
 
             # TAS Compliance
             st.header("## TAS Compliance")
@@ -852,7 +887,7 @@ if uploaded_files:
             doc.add_paragraph("⚠ No validation checks found using `_chN_` naming pattern.")
 
         doc.add_heading("Assumptions and Limitations", level=1)
-        doc.add_paragraph("List assumptions and limitations:")
+        doc.add_paragraph(assumptions_text)
 
         doc.add_heading("TAS Compliance", level=1)
         doc.add_paragraph("Describe how the model complies with TAS:")
