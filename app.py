@@ -444,6 +444,7 @@ if uploaded_files:
                 "Source": source_file,
                 "Info": ""  # To be filled by GPT
             })
+            
         # GPT to populate Info field
         for row in inputs_data:
             input_name = row["Name"]
@@ -534,8 +535,6 @@ if uploaded_files:
         outputs_df = pd.DataFrame(outputs_data)
 
         # --- Logic documentation based on _c1_, _c2_, etc. ---
-
-
         logic_summaries = {}
         logic_pattern = re.compile(r"^_c(\d+)_.*")  # matches _c1_, _c2_, etc.
 
@@ -604,6 +603,65 @@ if uploaded_files:
         if not logic_steps:
             st.warning("⚠️ No logic components found using `_c1_`, `_c2_`, etc. naming convention. Please check that named ranges follow this format.")
 
+        # --- Checks and Validation ---
+        check_pattern = re.compile(r"^_ch(\d+)_.*")  # matches _ch1_, _ch2_, etc.
+        check_summaries = {}
+
+        # Extract and order checks
+        for name in summaries:
+            match = check_pattern.match(name)
+            if match:
+                check_num = int(match.group(1))
+                check_summaries[check_num] = name
+
+        check_data = []
+        for check_num in sorted(check_summaries):
+            name = check_summaries[check_num]
+            summary_json = summaries[name]
+            json_summary = summary_json.get("summary", "")
+            general_formula = summary_json.get("general_formula", "")
+            sheet = summary_json.get("sheet_name", "")
+            excel_range = summary_json.get("excel_range", "")
+
+            # GPT prompt to describe what the check does
+            prompt = f"""You are an expert actuary and spreadsheet modeller.
+
+        You are reviewing a check step in an Excel model using the Lee-Carter mortality framework.
+
+        The named range is `{name}`, located in `{sheet}` `{excel_range}`.
+
+        Here is a description of the logic:
+        "{json_summary}"
+
+        And the general formula pattern:
+        "{general_formula}"
+
+        What is this check checking for? Summarize the logic of the check in 1–2 confident sentences and state whether it appears to validate a model result, flag an inconsistency, or confirm an assumption.
+
+        Avoid vague language. Be concise and clear."""
+
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4",
+                    messages=[
+                        {"role": "system", "content": "You describe spreadsheet checks in actuarial models."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.3
+                )
+                description = response.choices[0].message.content.strip()
+            except Exception as e:
+                description = f"Error: {e}"
+
+            check_data.append({
+                "Check No.": check_num,
+                "Named Range": name,
+                "Description": description
+            })
+
+        # Convert to DataFrame for Streamlit and Word doc
+        checks_df = pd.DataFrame(check_data)
+        
     
         with st.expander("📄 Spreadsheet Document", expanded=False):
             st.title("📄 Model Documentation")
@@ -665,7 +723,10 @@ if uploaded_files:
 
             # Checks and validation
             st.header("## Checks and Validation")
-            st.text_area("Describe the checks and validation steps:")
+            if not checks_df.empty:
+                st.dataframe(checks_df, use_container_width=True)
+            else:
+            st.warning("⚠️ No checks found using `_ch1_`, `_ch2_`, etc. naming convention. The model may not include validation steps.")
 
             # Assumptions and limitations
             st.header("## Assumptions and Limitations")
@@ -773,7 +834,22 @@ if uploaded_files:
             doc.add_paragraph("⚠ No logic components found with the expected `_cN_` naming pattern.")
 
         doc.add_heading("Checks and Validation", level=1)
-        doc.add_paragraph("Describe the checks and validation steps:")
+        if not checks_df.empty:
+            table = doc.add_table(rows=1, cols=3)
+            table.autofit = True
+            table.style = "Table Grid"
+            hdr_cells = table.rows[0].cells
+            hdr_cells[0].text = "Check No."
+            hdr_cells[1].text = "Named Range"
+            hdr_cells[2].text = "Description"
+
+            for row in check_data:
+                row_cells = table.add_row().cells
+                row_cells[0].text = str(row["Check No."])
+                row_cells[1].text = row["Named Range"]
+                row_cells[2].text = row["Description"]
+        else:
+            doc.add_paragraph("⚠ No validation checks found using `_chN_` naming pattern.")
 
         doc.add_heading("Assumptions and Limitations", level=1)
         doc.add_paragraph("List assumptions and limitations:")
