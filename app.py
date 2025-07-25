@@ -358,6 +358,33 @@ if uploaded_files:
 
         #prepare content for documentation
 
+        ## -----Hints----###
+
+        hint_keywords = set()
+
+        for name in summaries:
+            name_lower = name.lower()
+            if "ax" in name_lower:
+                hint_keywords.add("annuity rates")
+            if "qx" in name_lower or "mortality" in name_lower:
+                hint_keywords.add("mortality rates")
+            if "sx" in name_lower:
+                hint_keywords.add("survival probabilities")
+            if "stoch" in name_lower or "rand" in name_lower or "stochastic" in name_lower:
+                hint_keywords.add("simulation-based projections")
+            if "vol" in name_lower or "sd" in name_lower or "sigma" in name_lower:
+                hint_keywords.add("volatility inputs or stochastic variation")
+            if "drift" in name_lower:
+                hint_keywords.add("long-term mortality trends or drift terms")
+            if "kapp" in name_lower or "beta" in name_lower or "alpha" in name_lower:
+                hint_keywords.add("Lee-Carter model parameters")
+
+        # Compose final sentence
+        if hint_keywords:
+            hint_sentence = "This model work with " + ", ".join(sorted(hint_keywords)) + "."
+        else:
+            hint_sentence = ""
+        
         # --- Generate high-level Purpose description ---
         try:
             joined_descriptions = "\n".join(
@@ -369,18 +396,27 @@ if uploaded_files:
 
             purpose_prompt = f"""You are an expert actuary and survival modeller.
 
-        You are reviewing an Excel model based on the **Lee-Carter mortality model** (or a related framework for projecting mortality rates).
+        You are reviewing an Excel spreadsheet model built using the **Lee-Carter mortality model** (or a closely related framework for projecting mortality rates).
 
-        Here are the descriptions of how various named ranges are used in the model:
+        {hint_sentence}
 
+        Below are summaries of how various named ranges are used in the model:
+
+        Summaries:
         {joined_descriptions}
 
-        And here are the general formula patterns from the model:
+        And here are the general formula patterns used in the model:
 
+        Formulas:
         {joined_formulas}
 
-        Based on this, provide a concise and high-level purpose statement for the spreadsheet model — 2–3 sentences describing what it calculates and its overall objective.
-        Use clear actuarial language without uncertainty (avoid words like 'might', 'possibly', 'likely').
+        Based on this information, write a **concise and confident purpose section** for the model documentation. Your response should be 2–3 sentences describing:
+
+        - What the model is designed to do (e.g. mortality projection, annuity pricing, survival simulation)
+        - What key calculations or methods it uses (e.g. simulations, drift parameters, qₓ calculations)
+        - The overall actuarial or business objective of the spreadsheet
+
+        Avoid vague or speculative phrases like "might", "possibly", or "likely". Use clear, professional actuarial language.
         """
 
             purpose_response = client.chat.completions.create(
@@ -493,7 +529,9 @@ if uploaded_files:
                 "Name": name,
                 "Description": ""  # To be filled by GPT
             })
+        output_names = " ".join(output_summaries.keys()).lower()
 
+                   
         # GPT to populate output descriptions
         for row in outputs_data:
             output_name = row["Name"]
