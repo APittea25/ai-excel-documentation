@@ -394,7 +394,7 @@ if uploaded_files:
                 f"{k}: {v.get('general_formula', '')}" for k, v in summaries.items() if "general_formula" in v
             )
 
-           purpose_prompt = f"""You are an expert actuary and spreadsheet modeller.
+        purpose_prompt = f"""You are an expert actuary and spreadsheet modeller.
 
         You are reviewing an Excel model based on the **Lee-Carter mortality framework**.
 
