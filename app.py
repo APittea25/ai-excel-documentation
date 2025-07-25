@@ -394,33 +394,34 @@ if uploaded_files:
                 f"{k}: {v.get('general_formula', '')}" for k, v in summaries.items() if "general_formula" in v
             )
 
-            purpose_prompt = f"""You are an expert actuary and survival modeller.
+           purpose_prompt = f"""You are an expert actuary and spreadsheet modeller.
 
-        You are reviewing an Excel spreadsheet model built using the **Lee-Carter mortality model** (or a closely related framework for projecting mortality rates).
+        You are reviewing an Excel model based on the **Lee-Carter mortality framework**.
 
         {hint_sentence}
 
-        Below are summaries of how various named ranges are used in the model:
+        The model uses named ranges and formulas structured to perform actuarial calculations.
 
-        Summaries:
+        Below are descriptions of how various parts of the model behave:
+
+        --- Summaries ---
         {joined_descriptions}
 
-        And here are the general formula patterns used in the model:
-
-        Formulas:
+        --- Formula patterns ---
         {joined_formulas}
 
-        Based on this information, write a **concise and confident purpose section** for the model documentation. Your response should be 2–3 sentences describing:
+        Using this information, write a **concise and confident purpose statement** for documentation. Your paragraph should follow this structure:
 
-        - What the model is designed to do (e.g. mortality projection, annuity pricing, survival simulation)
-        - What key calculations or methods it uses (e.g. simulations, drift parameters, qₓ calculations)
-        - The overall actuarial or business objective of the spreadsheet
+        1. Start with a clear sentence about what the model is designed to do (e.g. project mortality, simulate survival rates).
+        2. Describe what kinds of inputs it uses (e.g. mortality trends, drift terms, random simulations).
+        3. Summarize the types of outputs produced (e.g. annuity rates, survival curves).
+        4. Close with a sentence explaining what this model is useful for — pricing, forecasting, risk management, etc.
 
-        Avoid vague or speculative phrases like "might", "possibly", or "likely". Use clear, professional actuarial language.
+        Use actuarial language. Do not say “likely”, “possibly”, or “may”. Be direct and factual.
         """
 
             purpose_response = client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o",
                 messages=[
                     {"role": "system", "content": "You write purpose sections for actuarial models."},
                     {"role": "user", "content": purpose_prompt}
