@@ -726,7 +726,7 @@ if uploaded_files:
             if not checks_df.empty:
                 st.dataframe(checks_df, use_container_width=True)
             else:
-            st.warning("⚠️ No checks found using `_ch1_`, `_ch2_`, etc. naming convention. The model may not include validation steps.")
+                st.warning("⚠️ No checks found using `_ch1_`, `_ch2_`, etc. naming convention. The model may not include validation steps.")
 
             # Assumptions and limitations
             st.header("## Assumptions and Limitations")
