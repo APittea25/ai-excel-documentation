@@ -491,25 +491,31 @@ if uploaded_files:
             sheet = summary_json.get("sheet_name", "")
             excel_range = summary_json.get("excel_range", "")
             prompt = f"""You are an expert actuary and survival modeller.
-        You are reviewing a spreadsheet model based on the **Lee-Carter mortality model** (or a closely related survival model).
-        
-        You're documenting a spreadsheet input named `{input_name}`, located in sheet `{sheet}`, cell range `{excel_range}`.
+
+        You are reviewing a spreadsheet model based on the Lee-Carter mortality model or a closely related framework.
+
+        {hint_sentence}
+
+        You're now documenting the spreadsheet input named `{input_name}`, located in sheet `{sheet}`, cell range `{excel_range}`.
 
         Its name suggests it's related to: "{input_name}"
 
         Here is the description of how this input is used in the model:
         "{json_summary}"
 
-        And the general formula pattern that references it:
+        And here is the general formula pattern that references it:
         "{general_formula}"
 
-        Based on this, describe what `{input_name}` represents and its role in the model, using clear and confident actuarial language. Do not use words like "might", "possibly", or "likely".
+        Based on all the above, write a concise, confident description of what `{input_name}` represents and how it contributes to the model.
 
-        Respond with 1–2 precise sentences."""
+        Use actuarial language. Avoid vague expressions like “might”, “somewhat”, “typically”, or filler phrases like “plays a crucial role” or “is important”. Do not describe patterns in the data (e.g., “decreasing linearly”) unless they are explicitly mentioned.
+
+        Respond with one precise sentence, or two if the second adds new technical detail or context.
+"""
 
             try:
                 response = client.chat.completions.create(
-                    model="gpt-4",
+                    model="gpt-4o",
                     messages=[
                         {"role": "system", "content": "You provide concise descriptions of actuarial inputs."},
                         {"role": "user", "content": prompt}
