@@ -403,11 +403,18 @@ if uploaded_files:
         inputs_data = []
 
         for idx, (name, summary) in enumerate(input_summaries.items(), start=1):
-            source_file = summary.get("file_name", "")
             excel_range = summary.get("excel_range", "")
-            cell_type = "Unknown"
+
+            # Determine source based on name
+            if "_a_" in name:
+                source = "Assumptions team"
+            elif "_m_" in name:
+                source = "Modelling team"
+            else:
+                source = "Unknown"
 
             # Determine type based on excel_range
+            cell_type = "Unknown"
             if ":" not in excel_range:
                 cell_type = "Error"  # invalid or incomplete range
             else:
