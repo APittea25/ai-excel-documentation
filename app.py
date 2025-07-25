@@ -548,25 +548,29 @@ if uploaded_files:
             sheet = summary_json.get("sheet_name", "")
             excel_range = summary_json.get("excel_range", "")
 
-            prompt = f"""You are an expert actuary and survival modeller.
+            prompt = f"""You are an expert actuary and spreadsheet modeller.
 
-        You are reviewing a spreadsheet output named `{output_name}`, located in sheet `{sheet}`, cell range `{excel_range}`.
+        You are reviewing an Excel spreadsheet built on the **Lee-Carter mortality model** or a closely related survival modelling framework.
 
-        Here is the description of how this output is used in the model:
+        {hint_sentence}
+
+        You are documenting the model output named `{output_name}`, located in sheet `{sheet}`, cell range `{excel_range}`.
+
+        Here is how this output behaves in the model:
         "{json_summary}"
 
-        And here is the general formula pattern that defines it:
+        And here is the formula structure used to calculate it:
         "{general_formula}"
 
-        This model is based on the **Lee-Carter mortality model** or a related survival framework.
+        Based on this, write a concise and confident explanation of what `{output_name}` represents and how it contributes to the model's output.
 
-        Describe in clear actuarial language what `{output_name}` represents and its role in the output of the model. Be confident and specific. Avoid words like "might", "likely", or "possibly".
+        Use actuarial language. Do **not** include vague expressions like “might”, “possibly”, or “likely”, and avoid filler phrases like “plays a crucial role”, “important component”, or “used to calculate”. Focus instead on what it does and how it connects to the broader modelling framework.
 
-        Respond with 1–2 precise sentences."""
+        Respond with **one precise sentence**, or two if the second adds useful technical context."""
 
             try:
                 response = client.chat.completions.create(
-                    model="gpt-4",
+                    model="gpt-4o",
                     messages=[
                         {"role": "system", "content": "You describe actuarial spreadsheet outputs."},
                         {"role": "user", "content": prompt}
@@ -602,32 +606,35 @@ if uploaded_files:
 
             prompt = f"""You are an expert actuary and spreadsheet modeller.
 
-        You are reviewing a calculation step in an Excel-based actuarial model built on the Lee-Carter mortality framework.
+        You are reviewing a calculation step in an Excel model built on the **Lee-Carter mortality model** or a similar survival framework.
 
-        The named range for this step is `{name}` (step {step_number}), and it represents a key stage in the spreadsheet's logic.
+        {hint_sentence}
 
-        Here is the general description of this calculation step:
+        The step being documented is `{name}`, located in sheet `{sheet}`, range `{excel_range}`. It is labelled as step {step_number} in the spreadsheet.
+
+        Below is a general description of the calculation:
         "{json_summary}"
 
-        And here is the general formula logic:
+        And here is the abstracted formula pattern:
         "{general_formula}"
 
-        This step depends on the following named ranges:
-        {', '.join(dependencies)}
+        This step depends directly on the following named ranges:
+        {', '.join(dependencies_list)}
 
-        Please write 2–3 precise and confident sentences that explain:
+        Write a concise explanation that covers:
 
-        1. The purpose of this calculation step in the model.
-        2. What is the calculations and how it contributes to the projection.
-        3. Any key inputs or dependencies used in this step.
+        1. The purpose of this calculation step.
+        2. The type of calculation it performs and what is being projected or transformed.
+        3. Its direct dependencies — inputs or other calculations — and how they flow into this step.
 
-        Avoid vague language like 'might' or 'possibly' — be concise and clear.
+        Use confident actuarial language. Avoid generic phrases like “important step”, “plays a role”, “typically used for”, etc. Do not speculate.
 
-        Respond with 1-2 precise sentences."""
+        Respond with 1–2 clear sentences.
+        """
 
             try:
                 response = client.chat.completions.create(
-                    model="gpt-4",
+                    model="gpt-4o",
                     messages=[
                         {"role": "system", "content": "You describe logic steps in actuarial models clearly."},
                         {"role": "user", "content": prompt}
@@ -671,23 +678,28 @@ if uploaded_files:
             # GPT prompt to describe what the check does
             prompt = f"""You are an expert actuary and spreadsheet modeller.
 
-        You are reviewing a check step in an Excel model using the Lee-Carter mortality framework.
+        You are reviewing a **validation check** in an Excel model based on the **Lee-Carter mortality framework** or a similar survival model.
 
-        The named range is `{name}`, located in `{sheet}` `{excel_range}`.
+        {hint_sentence}
 
-        Here is a description of the logic:
+        The named range being reviewed is `{name}`, located in sheet `{sheet}`, cell range `{excel_range}`.
+
+        Here is a summary of the logic used in this check:
         "{json_summary}"
 
-        And the general formula pattern:
+        And here is the general formula pattern:
         "{general_formula}"
 
-        What is this check checking for? Summarize the logic of the check in 1–2 confident sentences and state whether it appears to validate a model result, flag an inconsistency, or confirm an assumption.
+        Write a clear and confident description of what this check is verifying, referencing model outputs, intermediate calculations, or assumptions where relevant.
 
-        Avoid vague language. Be concise and clear."""
+        Avoid vague words like “might” or “appears to”, and do not use generic filler like “this is a check to ensure…”.
+
+        Respond with one precise sentence explaining what this check validates or confirms.
+        """
 
             try:
                 response = client.chat.completions.create(
-                    model="gpt-4",
+                    model="gpt-4o",
                     messages=[
                         {"role": "system", "content": "You describe spreadsheet checks in actuarial models."},
                         {"role": "user", "content": prompt}
@@ -716,22 +728,28 @@ if uploaded_files:
                 f"{k}: {v.get('general_formula', '')}" for k, v in summaries.items() if "general_formula" in v
             )
 
-            assumptions_prompt = f"""You are an expert actuary and spreadsheet modeller reviewing a workbook based on the Lee-Carter mortality model.
+            assumptions_prompt = f"""You are an expert actuary and spreadsheet modeller reviewing a workbook based on the **Lee-Carter mortality model** or a similar mortality projection framework.
 
-        Below are summaries and formulas used in various named ranges of the model:
+        {hint_sentence}
 
-        Summaries:
+        Below are summaries and general formulas of the spreadsheet's calculations:
+
+        --- Summaries ---
         {all_summaries}
 
-        Formulas:
+        --- Formula patterns ---
         {all_formulas}
 
-        From this information, write a concise paragraph that lists the **key assumptions** underlying this spreadsheet model (e.g., trends, input behaviour, mortality evolution), and any **notable limitations or simplifications** (e.g., no sensitivity testing, static inputs, deterministic projections).
+        Using this information, write a **short, clear paragraph** that outlines:
 
-        Avoid vague language like "possibly" or "might". Use confident and professional actuarial language."""
+        1. The key assumptions used in this spreadsheet (e.g. mortality trends, parameter stability, projection horizon).
+        2. Any notable limitations or modelling constraints (e.g. fixed inputs, deterministic assumptions, lack of stress testing).
+
+        Avoid vague phrases like “it might be assumed” or “possibly”. Be direct and professional.
+        """
 
             assumptions_response = client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o",
                 messages=[
                     {"role": "system", "content": "You describe assumptions and limitations in actuarial spreadsheet models."},
                     {"role": "user", "content": assumptions_prompt}
