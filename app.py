@@ -441,7 +441,7 @@ if uploaded_files:
                 "No.": idx,
                 "Name": name,
                 "Type": cell_type,
-                "Source": source_file,
+                "Source": source,
                 "Info": ""  # To be filled by GPT
             })
             
