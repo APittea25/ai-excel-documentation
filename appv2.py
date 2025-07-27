@@ -169,7 +169,7 @@ if uploaded_files:
         output_example,
         logic_example,
         check_example,
-        assumptions_example
+        assumption_example
     )
     
     from prompt import (
@@ -421,7 +421,7 @@ if uploaded_files:
                 f"{k}: {v.get('general_formula', '')}" for k, v in summaries.items() if "general_formula" in v
             )
 
-            assumptions_prompt = build_assumptions_prompt(summaries, hint_sentence,assumptions_example)
+            assumptions_prompt = build_assumptions_prompt(summaries, hint_sentence,assumption_example)
 
             assumptions_text = call_chat_model(
                 system_msg="You describe assumptions and limitations in actuarial spreadsheet models.",
