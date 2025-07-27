@@ -1,4 +1,29 @@
 # prompt.py
+def build_json_summary_prompt(named_range, formulas):
+    return f"""
+You are an expert actuary and spreadsheet analyst.
+
+Given the following remapped formulas from an Excel named range, summarize the pattern behind the calculations in a general form.
+Each formula follows a remapped structure using notation like [1][2] to indicate row and column indices.
+
+Please return a JSON object like:
+{{
+  "file_name": "MyWorkbook.xlsx",
+  "sheet_name": "Inputs",
+  "excel_range": "B2:D5",
+  "named_range": "{named_range}",
+  "summary": "Description of what the formula does",
+  "general_formula": "for i in range(...): for j in range(...): Result[i][j] = ...",
+  "dependencies": ["OtherNamedRange1", "OtherNamedRange2"],
+  "notes": "Any caveats, limitations, or variations found"
+}}
+
+Formulas:
+{formulas[:10]}  # Sample first 10 for context
+
+Only return the JSON.
+"""
+
 
 def build_purpose_prompt(summaries, hint_sentence):
     joined_descriptions = "\n".join(
