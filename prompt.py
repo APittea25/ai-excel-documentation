@@ -25,7 +25,7 @@ Only return the JSON.
 """
 
 
-def build_purpose_prompt(summaries, hint_sentence):
+def build_purpose_prompt(summaries, hint_sentence, example=None):
     joined_descriptions = "\n".join(
         f"{k}: {v.get('summary', '')}" for k, v in summaries.items() if "summary" in v
     )
@@ -33,14 +33,19 @@ def build_purpose_prompt(summaries, hint_sentence):
         f"{k}: {v.get('general_formula', '')}" for k, v in summaries.items() if "general_formula" in v
     )
 
-    return f"""You are an expert actuary and spreadsheet modeller.
+    base = f"""You are an expert actuary and spreadsheet modeller.
 
 You are reviewing an Excel model based on the **Lee-Carter mortality framework**.
 
 {hint_sentence}
 
 The model uses named ranges and formulas structured to perform actuarial calculations.
+"""
 
+    if example:
+        base += f"\n--- Example Purpose Statement ---\n{example.strip()}\n"
+
+    base += f"""
 Below are descriptions of how various parts of the model behave:
 
 --- Summaries ---
@@ -58,10 +63,11 @@ Using this information, write a **concise and confident purpose statement** for 
 
 Use actuarial language. Do not say “likely”, “possibly”, or “may”. Be direct and factual.
 """
+    return base
 
 
-def build_input_prompt(input_name, summary_json, hint_sentence):
-    return f"""You are an expert actuary and survival modeller.
+def build_input_prompt(input_name, summary_json, hint_sentence, example=None):
+    base = f"""You are an expert actuary and survival modeller.
 
 You are reviewing a spreadsheet model based on the Lee-Carter mortality model or a closely related framework.
 
@@ -76,17 +82,23 @@ Here is the description of how this input is used in the model:
 
 And here is the general formula pattern that references it:
 "{summary_json.get("general_formula", "")}"
+"""
 
+    if example:
+        base += f'\n--- Example Input Description ---\n{example.strip()}\n'
+
+    base += """
 Based on all the above, write a concise, confident description of what `{input_name}` represents and how it contributes to the model.
 
 Use actuarial language. Avoid vague expressions like “might”, “somewhat”, “typically”, or filler phrases like “plays a crucial role” or “is important”. Do not describe patterns in the data (e.g., “decreasing linearly”) unless they are explicitly mentioned.
 
 Respond with one precise sentence, or two if the second adds new technical detail or context.
 """
+    return base
 
 
-def build_output_prompt(name, summary_json, hint_sentence):
-    return f"""You are an expert actuary and spreadsheet modeller.
+def build_output_prompt(name, summary_json, hint_sentence, example=None):
+    base = f"""You are an expert actuary and spreadsheet modeller.
 
 You are reviewing an Excel spreadsheet built on the **Lee-Carter mortality model** or a closely related survival modelling framework.
 
@@ -99,17 +111,22 @@ Here is how this output behaves in the model:
 
 And here is the formula structure used to calculate it:
 "{summary_json.get("general_formula", "")}"
+"""
 
+    if example:
+        base += f"\n--- Example Output Description ---\n{example.strip()}\n"
+
+    base += """
 Based on this, write a concise and confident explanation of what `{name}` represents and how it contributes to the model's output.
 
 Use actuarial language. Do **not** include vague expressions like “might”, “possibly”, or “likely”, and avoid filler phrases like “plays a crucial role”, “important component”, or “used to calculate”. Focus instead on what it does and how it connects to the broader modelling framework.
 
 Respond with **one precise sentence**, or two if the second adds useful technical context.
 """
+    return base
 
-
-def build_logic_prompt(name, summary_json, step_number, hint_sentence):
-    return f"""You are an expert actuary and spreadsheet modeller.
+def build_logic_prompt(name, summary_json, step_number, hint_sentence, example=None):
+    base = f"""You are an expert actuary and spreadsheet modeller.
 
 You are reviewing a calculation step in an Excel model built on the **Lee-Carter mortality model** or a similar survival framework.
 
@@ -125,7 +142,12 @@ And here is the abstracted formula pattern:
 
 This step depends directly on the following named ranges:
 {', '.join(summary_json.get("dependencies", []))}
+"""
 
+    if example:
+        base += f"\n--- Example Logic Description ---\n{example.strip()}\n"
+
+    base += """
 Write a concise explanation that covers:
 
 1. The purpose of this calculation step.
@@ -136,10 +158,10 @@ Use confident actuarial language. Avoid generic phrases like “important step�
 
 Respond with 1–2 clear sentences.
 """
+    return base
 
-
-def build_check_prompt(name, summary_json, hint_sentence):
-    return f"""You are an expert actuary and spreadsheet modeller.
+def build_check_prompt(name, summary_json, hint_sentence, example=None):
+    base = f"""You are an expert actuary and spreadsheet modeller.
 
 You are reviewing a **validation check** in an Excel model based on the **Lee-Carter mortality framework** or a similar survival model.
 
@@ -152,16 +174,22 @@ Here is a summary of the logic used in this check:
 
 And here is the general formula pattern:
 "{summary_json.get("general_formula", "")}"
+"""
 
+    if example:
+        base += f"\n--- Example Check Description ---\n{example.strip()}\n"
+
+    base += """
 Write a clear and confident description of what this check is verifying, referencing model outputs, intermediate calculations, or assumptions where relevant.
 
 Avoid vague words like “might” or “appears to”, and do not use generic filler like “this is a check to ensure…”.
 
 Respond with one precise sentence explaining what this check validates or confirms.
 """
+    return base
 
 
-def build_assumptions_prompt(summaries, hint_sentence):
+def build_assumptions_prompt(summaries, hint_sentence, example=None):
     all_summaries = "\n".join(
         f"{k}: {v.get('summary', '')}" for k, v in summaries.items() if "summary" in v
     )
@@ -169,7 +197,7 @@ def build_assumptions_prompt(summaries, hint_sentence):
         f"{k}: {v.get('general_formula', '')}" for k, v in summaries.items() if "general_formula" in v
     )
 
-    return f"""You are an expert actuary and spreadsheet modeller reviewing a workbook based on the **Lee-Carter mortality model** or a similar mortality projection framework.
+    base_prompt = f"""You are an expert actuary and spreadsheet modeller reviewing a workbook based on the **Lee-Carter mortality model** or a similar mortality projection framework.
 
 {hint_sentence}
 
@@ -180,7 +208,12 @@ Below are summaries and general formulas of the spreadsheet's calculations:
 
 --- Formula patterns ---
 {all_formulas}
+"""
 
+    if example:
+        base_prompt += f"\n--- Example Assumptions Paragraph ---\n{example.strip()}\n"
+
+    base_prompt += """
 Using this information, write a **short, clear paragraph** that outlines:
 
 1. The key assumptions used in this spreadsheet (e.g. mortality trends, parameter stability, projection horizon).
@@ -188,3 +221,4 @@ Using this information, write a **short, clear paragraph** that outlines:
 
 Avoid vague phrases like “it might be assumed” or “possibly”. Be direct and professional.
 """
+    return base_prompt
