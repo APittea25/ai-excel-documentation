@@ -188,6 +188,7 @@ if uploaded_files:
         except Exception as e:
             entries.append(f"❌ Error accessing {name} in {sheet_name}: {e}")
 
+        named_ref_formulas = {}  # initialize the dictionary
         named_ref_formulas[name] = formulas_for_graph
         
         limit = 50
