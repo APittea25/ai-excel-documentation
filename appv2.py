@@ -26,7 +26,6 @@ def toggle():
 st.button("🔁 Expand / Collapse All Named Ranges", on_click=toggle)
 
 # Allow manual mapping of external references like [1], [2], etc.
-
 with st.expander("🔧 Manual Mapping for External References", expanded=False):
     st.subheader("Manual Mapping for External References")
     external_refs = {}
@@ -38,17 +37,15 @@ with st.expander("🔧 Manual Mapping for External References", expanded=False):
 
 uploaded_files = st.file_uploader("\U0001F4C2 Upload Excel files", type=["xlsx"], accept_multiple_files=True)
 
-if uploaded_files:
-    
+if uploaded_files:  
     from file_handlers import handle_uploaded_files
-
     data = handle_uploaded_files(uploaded_files)
     all_named_cell_map = data["named_cell_map"]
     all_named_ref_info = data["named_ref_info"]
     file_display_names = data["file_display_names"]
 
     from formula_mapper import remap_formula
-    remapped = remap_formula(formula, file_name, sheet_name, all_named_cell_map, external_refs)
+    
     
     named_ref_formulas = {}  # initialize the dictionary
     for (name, (file_name, sheet_name, coord_set, min_row, min_col)) in all_named_ref_info.items():
@@ -82,7 +79,7 @@ if uploaded_files:
                             formula = str(cell.value)
 
                         if formula:
-                            remapped = remap_formula(formula, file_name, sheet_name)
+                            remapped = remap_formula(formula, file_name, sheet_name, all_named_cell_map, external_refs)
                             formulas_for_graph.append(remapped)
                         elif cell.value is not None:
                             formula = f"[value] {str(cell.value)}"
