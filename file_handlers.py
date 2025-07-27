@@ -7,6 +7,7 @@ def handle_uploaded_files(uploaded_files):
     all_named_cell_map = {}
     all_named_ref_info = {}
     file_display_names = {}
+    named_ref_formulas = {}
 
     for uploaded_file in uploaded_files:
         display_name = uploaded_file.name
@@ -27,6 +28,7 @@ def handle_uploaded_files(uploaded_files):
                     min_col = min(cell.column for row in cells for cell in row)
 
                     coord_set = set()
+                    formulas_for_graph = []
                     for row in cells:
                         for cell in row:
                             r, c = cell.row, cell.column
@@ -34,7 +36,12 @@ def handle_uploaded_files(uploaded_files):
                             col_offset = c - min_col + 1
                             all_named_cell_map[(display_name, sheet_name, r, c)] = (name, row_offset, col_offset)
                             coord_set.add((r, c))
+                            if isinstance(cell.value, str) and cell.value.startswith("="):
+                                formulas_for_graph.append(cell.value.strip())
+                            elif cell.value is not None:
+                                formulas_for_graph.append(str(cell.value))
                     all_named_ref_info[name] = (display_name, sheet_name, coord_set, min_row, min_col)
+                    named_ref_formulas[name] = formulas_for_graph
                 except Exception:
                     continue
 
@@ -42,4 +49,5 @@ def handle_uploaded_files(uploaded_files):
         "named_cell_map": all_named_cell_map,
         "named_ref_info": all_named_ref_info,
         "file_display_names": file_display_names,
+        "named_ref_formulas": named_ref_formulas 
     }
