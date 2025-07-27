@@ -11,7 +11,6 @@ import pandas as pd
 
 st.set_page_config(page_title="Named Range Formula Remapper", layout="wide")
 
-# ✅ Step 1: Add this here
 if "json_summaries" not in st.session_state:
     st.session_state.json_summaries = None
 
@@ -238,12 +237,12 @@ if uploaded_files:
 
         #prepare content for documentation
 
-        ## -----Hints----###
 
+        #Import hints
         from hint import generate_hint_sentence
         hint_sentence = generate_hint_sentence(summaries)
 
-        
+        #Import prompts
         from prompt import (
             build_purpose_prompt,
             build_input_prompt,
