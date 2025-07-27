@@ -43,7 +43,9 @@ def build_word_doc(summaries, model_purpose, inputs_data, outputs_data, logic_st
     table = doc.add_table(rows=1, cols=5)
     table.style = "Table Grid"
     hdr = table.rows[0].cells
-    hdr[:] = [c.text for c in ["No.", "Name", "Type", "Source", "Info"]]
+    headers = ["No.", "Name", "Type", "Source", "Info"]]
+    for i, header in enumerate(headers):
+        hdr[i].text = header
 
     for row in inputs_data:
         r = table.add_row().cells
@@ -58,8 +60,10 @@ def build_word_doc(summaries, model_purpose, inputs_data, outputs_data, logic_st
     table = doc.add_table(rows=1, cols=3)
     table.style = "Table Grid"
     hdr = table.rows[0].cells
-    hdr[:] = [c.text for c in ["No.", "Name", "Description"]]
-
+    headers = ["No.", "Name", "Description"]]
+    for i, header in enumerate(headers):
+        hdr[i].text = header
+        
     for row in outputs_data:
         r = table.add_row().cells
         r[0].text = str(row["No."])
@@ -72,7 +76,9 @@ def build_word_doc(summaries, model_purpose, inputs_data, outputs_data, logic_st
         table = doc.add_table(rows=1, cols=3)
         table.style = "Table Grid"
         hdr = table.rows[0].cells
-        hdr[:] = [c.text for c in ["Step", "Named Range", "Description"]]
+        headers = ["Step", "Named Range", "Description"]]
+        for i, header in enumerate(headers):
+            hdr[i].text = header
 
         for row in logic_steps:
             r = table.add_row().cells
@@ -88,7 +94,9 @@ def build_word_doc(summaries, model_purpose, inputs_data, outputs_data, logic_st
         table = doc.add_table(rows=1, cols=3)
         table.style = "Table Grid"
         hdr = table.rows[0].cells
-        hdr[:] = [c.text for c in ["Check No.", "Named Range", "Description"]]
+        headers = ["Check No.", "Named Range", "Description"]]
+        for i, header in enumerate(headers):
+            hdr[i].text = header
 
         for row in checks_data:
             r = table.add_row().cells
