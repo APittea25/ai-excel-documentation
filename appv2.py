@@ -168,7 +168,7 @@ if uploaded_files:
         input_example,
         output_example,
         logic_example,
-        check-example,
+        check_example,
         assumptions_example
     )
     
