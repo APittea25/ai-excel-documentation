@@ -162,6 +162,15 @@ if uploaded_files:
 # ---- Imports for AI-Generated Response ----
 
     import json
+
+    from examples import (
+        PURPOSE_EXAMPLE,
+        INPUT_EXAMPLE,
+        OUTPUT_EXAMPLE,
+        LOGIC_EXAMPLE,
+        CHECK_EXAMPLE,
+        ASSUMPTIONS_EXAMPLE
+    )
     
     from prompt import (
             build_json_summary_prompt,
