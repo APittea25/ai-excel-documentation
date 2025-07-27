@@ -276,7 +276,7 @@ if uploaded_files:
         )
         
         # --- Generate high-level Purpose description ---
-            purpose_prompt = build_purpose_prompt(summaries, hint_sentence)
+        purpose_prompt = build_purpose_prompt(summaries, hint_sentence)
             purpose_response = client.chat.completions.create(
                 model="gpt-4o",
                 messages=[
