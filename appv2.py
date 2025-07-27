@@ -247,9 +247,10 @@ if uploaded_files:
             build_check_prompt,
             build_assumptions_prompt
         )
+        from llm_engine import call_chat_model
+       
         
         # --- Generate high-level Purpose description ---
-        from llm_engine import call_chat_model
         purpose_prompt = build_purpose_prompt(summaries, hint_sentence)
 
         model_purpose = call_chat_model(
@@ -314,19 +315,10 @@ if uploaded_files:
             excel_range = summary_json.get("excel_range", "")
             
             input_prompt = build_input_prompt(input_name, summary_json, hint_sentence)
-
-            try:
-                response = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
-                        {"role": "system", "content": "You provide concise descriptions of actuarial inputs."},
-                        {"role": "user", "content": input_prompt}
-                    ],
-                    temperature=0.3
-                )
-                row["Info"] = response.choices[0].message.content.strip()
-            except Exception as e:
-                row["Info"] = f"Error: {e}"
+            row["Info"] = call_chat_model(
+                system_msg="You provide concise descriptions of actuarial inputs.",
+                user_prompt=input_prompt
+            )
         inputs_df = pd.DataFrame(inputs_data)
 
         # --- Output data ---
@@ -351,20 +343,11 @@ if uploaded_files:
             excel_range = summary_json.get("excel_range", "")
 
             output_prompt = build_output_prompt(name, summary_json, hint_sentence)
-
-            try:
-                response = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
-                        {"role": "system", "content": "You describe actuarial spreadsheet outputs."},
-                        {"role": "user", "content": output_prompt}
-                    ],
-                    temperature=0.3
-                )
-                row["Description"] = response.choices[0].message.content.strip()
-            except Exception as e:
-                row["Description"] = f"Error: {e}"
-
+            row["Description"] = call_chat_model(
+                system_msg="You describe actuarial spreadsheet outputs.",
+                user_prompt=output_prompt
+            )
+            
         outputs_df = pd.DataFrame(outputs_data)
 
         # --- Logic documentation based on _c1_, _c2_, etc. ---
@@ -390,19 +373,11 @@ if uploaded_files:
 
             logic_prompt = build_logic_prompt(name, summary_json, step_number, hint_sentence)
 
-            try:
-                response = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
-                        {"role": "system", "content": "You describe logic steps in actuarial models clearly."},
-                        {"role": "user", "content": logic_prompt}
-                    ],
-                    temperature=0.3
-                )
-                explanation = response.choices[0].message.content.strip()
-            except Exception as e:
-                explanation = f"Error generating description: {e}"
-
+            explanation = call_chat_model(
+                system_msg="You describe logic steps in actuarial models clearly.",
+                user_prompt=logic_prompt
+            )
+            
             logic_steps.append({
                 "Step": step_number,
                 "Named Range": name,
@@ -436,19 +411,11 @@ if uploaded_files:
             # GPT prompt to describe what the check does
             check_prompt = build_check_prompt(name, summary_json, hint_sentence)
 
-            try:
-                response = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
-                        {"role": "system", "content": "You describe spreadsheet checks in actuarial models."},
-                        {"role": "user", "content": check_prompt}
-                    ],
-                    temperature=0.3
-                )
-                description = response.choices[0].message.content.strip()
-            except Exception as e:
-                description = f"Error: {e}"
-
+            description = call_chat_model(
+                system_msg="You describe spreadsheet checks in actuarial models.",
+                user_prompt=check_prompt
+            )
+            
             check_data.append({
                 "Check No.": check_num,
                 "Named Range": name,
@@ -469,15 +436,10 @@ if uploaded_files:
 
             assumptions_prompt = build_assumptions_prompt(summaries, hint_sentence)
 
-            assumptions_response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {"role": "system", "content": "You describe assumptions and limitations in actuarial spreadsheet models."},
-                    {"role": "user", "content": assumptions_prompt}
-                ],
-                temperature=0.3
+            assumptions_text = call_chat_model(
+                system_msg="You describe assumptions and limitations in actuarial spreadsheet models.",
+                user_prompt=assumptions_prompt
             )
-            assumptions_text = assumptions_response.choices[0].message.content.strip()
 
         except Exception as e:
             assumptions_text = f"Error generating assumptions and limitations: {e}"
