@@ -59,7 +59,6 @@ Using this information, write a **concise and confident purpose statement** for 
 1. Start with a clear sentence about what the model is designed to do (e.g. project mortality, simulate survival rates).
 2. Describe what kinds of inputs it uses (e.g. mortality trends, drift terms, random simulations).
 3. Summarize the types of outputs produced (e.g. annuity rates, survival curves).
-4. Close with a sentence explaining what this model is useful for — pricing, forecasting, risk management, etc.
 
 Use actuarial language. Do not say “likely”, “possibly”, or “may”. Be direct and factual.
 """
