@@ -240,30 +240,8 @@ if uploaded_files:
 
         ## -----Hints----###
 
-        hint_keywords = set()
-
-        for name in summaries:
-            name_lower = name.lower()
-            if "ax" in name_lower:
-                hint_keywords.add("annuity rates")
-            if "qx" in name_lower or "mortality" in name_lower:
-                hint_keywords.add("mortality rates")
-            if "sx" in name_lower:
-                hint_keywords.add("survival probabilities")
-            if "stoch" in name_lower or "rand" in name_lower or "stochastic" in name_lower:
-                hint_keywords.add("simulation-based projections")
-            if "vol" in name_lower or "sd" in name_lower or "sigma" in name_lower:
-                hint_keywords.add("volatility inputs or stochastic variation")
-            if "drift" in name_lower:
-                hint_keywords.add("long-term mortality trends or drift terms")
-            if "kapp" in name_lower or "beta" in name_lower or "alpha" in name_lower:
-                hint_keywords.add("Lee-Carter model parameters")
-
-        # Compose final sentence
-        if hint_keywords:
-            hint_sentence = "This model work with " + ", ".join(sorted(hint_keywords)) + "."
-        else:
-            hint_sentence = ""
+        from hint_engine import generate_hint_sentence
+        hint_sentence = generate_hint_sentence(summaries)
 
         
         from prompt import (
