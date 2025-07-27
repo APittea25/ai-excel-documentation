@@ -43,7 +43,7 @@ def build_word_doc(summaries, model_purpose, inputs_data, outputs_data, logic_st
     table = doc.add_table(rows=1, cols=5)
     table.style = "Table Grid"
     hdr = table.rows[0].cells
-    headers = ["No.", "Name", "Type", "Source", "Info"]]
+    headers = ["No.", "Name", "Type", "Source", "Info"]
     for i, header in enumerate(headers):
         hdr[i].text = header
 
@@ -60,7 +60,7 @@ def build_word_doc(summaries, model_purpose, inputs_data, outputs_data, logic_st
     table = doc.add_table(rows=1, cols=3)
     table.style = "Table Grid"
     hdr = table.rows[0].cells
-    headers = ["No.", "Name", "Description"]]
+    headers = ["No.", "Name", "Description"]
     for i, header in enumerate(headers):
         hdr[i].text = header
         
@@ -76,7 +76,7 @@ def build_word_doc(summaries, model_purpose, inputs_data, outputs_data, logic_st
         table = doc.add_table(rows=1, cols=3)
         table.style = "Table Grid"
         hdr = table.rows[0].cells
-        headers = ["Step", "Named Range", "Description"]]
+        headers = ["Step", "Named Range", "Description"]
         for i, header in enumerate(headers):
             hdr[i].text = header
 
@@ -94,7 +94,7 @@ def build_word_doc(summaries, model_purpose, inputs_data, outputs_data, logic_st
         table = doc.add_table(rows=1, cols=3)
         table.style = "Table Grid"
         hdr = table.rows[0].cells
-        headers = ["Check No.", "Named Range", "Description"]]
+        headers = ["Check No.", "Named Range", "Description"]
         for i, header in enumerate(headers):
             hdr[i].text = header
 
