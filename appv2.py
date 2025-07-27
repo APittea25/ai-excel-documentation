@@ -277,15 +277,15 @@ if uploaded_files:
         
         # --- Generate high-level Purpose description ---
         purpose_prompt = build_purpose_prompt(summaries, hint_sentence)
-            purpose_response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {"role": "system", "content": "You write purpose sections for actuarial models."},
-                    {"role": "user", "content": purpose_prompt}
-                ],
-                temperature=0.3
-            )
-            model_purpose = purpose_response.choices[0].message.content.strip()
+        purpose_response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "You write purpose sections for actuarial models."},
+                {"role": "user", "content": purpose_prompt}
+            ],
+            temperature=0.3
+        )
+        model_purpose = purpose_response.choices[0].message.content.strip()
         except Exception as e:
             model_purpose = f"Error generating purpose: {e}"
 
