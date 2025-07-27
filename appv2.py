@@ -164,12 +164,12 @@ if uploaded_files:
     import json
 
     from examples import (
-        PURPOSE_EXAMPLE,
-        INPUT_EXAMPLE,
-        OUTPUT_EXAMPLE,
-        LOGIC_EXAMPLE,
-        CHECK_EXAMPLE,
-        ASSUMPTIONS_EXAMPLE
+        purpose_example,
+        input_example,
+        output_example,
+        logic_example,
+        check-example,
+        assumptions_example
     )
     
     from prompt import (
@@ -238,7 +238,7 @@ if uploaded_files:
         hint_sentence = generate_hint_sentence(summaries)
         
         # --- Generate high-level Purpose description ---
-        purpose_prompt = build_purpose_prompt(summaries, hint_sentence)
+        purpose_prompt = build_purpose_prompt(summaries, hint_sentence,purpose_example)
 
         model_purpose = call_chat_model(
             system_msg="You write purpose sections for actuarial models.",
@@ -301,7 +301,7 @@ if uploaded_files:
             sheet = summary_json.get("sheet_name", "")
             excel_range = summary_json.get("excel_range", "")
             
-            input_prompt = build_input_prompt(input_name, summary_json, hint_sentence)
+            input_prompt = build_input_prompt(input_name, summary_json, hint_sentence,input_example)
             row["Info"] = call_chat_model(
                 system_msg="You provide concise descriptions of actuarial inputs.",
                 user_prompt=input_prompt
@@ -329,7 +329,7 @@ if uploaded_files:
             sheet = summary_json.get("sheet_name", "")
             excel_range = summary_json.get("excel_range", "")
 
-            output_prompt = build_output_prompt(name, summary_json, hint_sentence)
+            output_prompt = build_output_prompt(name, summary_json, hint_sentence,output_example)
             row["Description"] = call_chat_model(
                 system_msg="You describe actuarial spreadsheet outputs.",
                 user_prompt=output_prompt
@@ -358,7 +358,7 @@ if uploaded_files:
             excel_range = summary_json.get("excel_range", "")
             sheet = summary_json.get("sheet_name", "")
 
-            logic_prompt = build_logic_prompt(name, summary_json, step_number, hint_sentence)
+            logic_prompt = build_logic_prompt(name, summary_json, step_number, hint_sentence,logic_example)
 
             explanation = call_chat_model(
                 system_msg="You describe logic steps in actuarial models clearly.",
@@ -396,7 +396,7 @@ if uploaded_files:
             excel_range = summary_json.get("excel_range", "")
 
             # GPT prompt to describe what the check does
-            check_prompt = build_check_prompt(name, summary_json, hint_sentence)
+            check_prompt = build_check_prompt(name, summary_json, hint_sentence,check_example)
 
             description = call_chat_model(
                 system_msg="You describe spreadsheet checks in actuarial models.",
@@ -421,7 +421,7 @@ if uploaded_files:
                 f"{k}: {v.get('general_formula', '')}" for k, v in summaries.items() if "general_formula" in v
             )
 
-            assumptions_prompt = build_assumptions_prompt(summaries, hint_sentence)
+            assumptions_prompt = build_assumptions_prompt(summaries, hint_sentence,assumptions_example)
 
             assumptions_text = call_chat_model(
                 system_msg="You describe assumptions and limitations in actuarial spreadsheet models.",
