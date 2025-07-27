@@ -718,128 +718,17 @@ if uploaded_files:
         json_str = json.dumps(summaries, indent=2)
         st.download_button("📥 Download JSON Summary", data=json_str, file_name="named_range_summaries.json", mime="application/json")
 
-
-        doc = Document()
-        doc.add_heading("Named Range JSON Summary", 0)
-        for name, summary in summaries.items():
-            doc.add_heading(name, level=1)
-            for key, value in summary.items():
-                if isinstance(value, (list, dict)):
-                    value = json.dumps(value, indent=2)
-                doc.add_paragraph(f"{key}: {value}")
-
-        # 🧾 Add Spreadsheet Document content to Word
-        doc.add_page_break()
-        doc.add_heading("📄 Spreadsheet Documentation", 0)
-
-        # Version Control
-        doc.add_heading("Version Control", level=1)
-        doc.add_heading("Model Version Control", level=2)
-        for col in model_version_df.columns:
-            doc.add_paragraph(f"{col}: __________")
-
-        doc.add_heading("Documentation Version Control", level=2)
-        for col in doc_version_df.columns:
-            doc.add_paragraph(f"{col}: __________")
-
-        # Ownership
-        doc.add_heading("Ownership", level=1)
-        doc.add_paragraph("Owner: __________")
-        doc.add_paragraph("Risk rating (or other client control standard): __________")
-        doc.add_paragraph("Internal audit history: __________")
-
-        # Purpose
-        doc.add_heading("Purpose", level=1)
-        doc.add_paragraph(model_purpose)
-
-        # Inputs Table
-        # Inputs Table (formatted as a Word table)
-        doc.add_heading("Inputs", level=1)
-        table = doc.add_table(rows=1, cols=5)
-        table.autofit = True
-        table.style = "Table Grid"
-
-        # Add table headers
-        hdr_cells = table.rows[0].cells
-        hdr_cells[0].text = "No."
-        hdr_cells[1].text = "Name"
-        hdr_cells[2].text = "Type"
-        hdr_cells[3].text = "Source"
-        hdr_cells[4].text = "Info"
-
-        # Add data rows
-        for row in inputs_data:
-            row_cells = table.add_row().cells
-            row_cells[0].text = str(row["No."])
-            row_cells[1].text = row["Name"]
-            row_cells[2].text = row["Type"]
-            row_cells[3].text = row["Source"]
-            row_cells[4].text = row["Info"]
-
-        # Other sections
-        doc.add_heading("Outputs", level=1)
-        table = doc.add_table(rows=1, cols=3)
-        table.autofit = True
-        table.style = "Table Grid"
-
-        hdr_cells = table.rows[0].cells
-        hdr_cells[0].text = "No."
-        hdr_cells[1].text = "Name"
-        hdr_cells[2].text = "Description"
-
-        for row in outputs_data:
-            row_cells = table.add_row().cells
-            row_cells[0].text = str(row["No."])
-            row_cells[1].text = row["Name"]
-            row_cells[2].text = row["Description"]
-
-        doc.add_heading("Logic", level=1)
-        if logic_steps:
-            table = doc.add_table(rows=1, cols=3)
-            table.autofit = True
-            table.style = "Table Grid"
-            hdr_cells = table.rows[0].cells
-            hdr_cells[0].text = "Step"
-            hdr_cells[1].text = "Named Range"
-            hdr_cells[2].text = "Description"
-
-            for row in logic_steps:
-                row_cells = table.add_row().cells
-                row_cells[0].text = str(row["Step"])
-                row_cells[1].text = row["Named Range"]
-                row_cells[2].text = row["Description"]
-        else:
-            doc.add_paragraph("⚠ No logic components found with the expected `_cN_` naming pattern.")
-
-        doc.add_heading("Checks and Validation", level=1)
-        if not checks_df.empty:
-            table = doc.add_table(rows=1, cols=3)
-            table.autofit = True
-            table.style = "Table Grid"
-            hdr_cells = table.rows[0].cells
-            hdr_cells[0].text = "Check No."
-            hdr_cells[1].text = "Named Range"
-            hdr_cells[2].text = "Description"
-
-            for row in check_data:
-                row_cells = table.add_row().cells
-                row_cells[0].text = str(row["Check No."])
-                row_cells[1].text = row["Named Range"]
-                row_cells[2].text = row["Description"]
-        else:
-            doc.add_paragraph("⚠ No validation checks found using `_chN_` naming pattern.")
-
-        doc.add_heading("Assumptions and Limitations", level=1)
-        doc.add_paragraph(assumptions_text)
-
-        doc.add_heading("TAS Compliance", level=1)
-        doc.add_paragraph("Describe how the model complies with TAS:")
-
+        from doc_builder import build_word_doc
+        docx_io = build_word_doc(
+            summaries=summaries,
+            model_purpose=model_purpose,
+            inputs_data=inputs_data,
+            outputs_data=outputs_data,
+            logic_steps=logic_steps,
+            checks_data=check_data,
+            assumptions_text=assumptions_text
+        )
         
-        docx_io = BytesIO()
-        doc.save(docx_io)
-        docx_io.seek(0)
-
         st.download_button(
             "📄 Download Summary as Word Document",
             data=docx_io,
