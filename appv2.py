@@ -240,7 +240,7 @@ if uploaded_files:
 
         ## -----Hints----###
 
-        from hint_engine import generate_hint_sentence
+        from hint import generate_hint_sentence
         hint_sentence = generate_hint_sentence(summaries)
 
         
