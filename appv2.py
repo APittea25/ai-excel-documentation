@@ -287,7 +287,7 @@ if uploaded_files:
         )
         model_purpose = purpose_response.choices[0].message.content.strip()
         except Exception as e:
-            model_purpose = f"Error generating purpose: {e}"
+        model_purpose = f"Error generating purpose: {e}"
 
         
         # input data
