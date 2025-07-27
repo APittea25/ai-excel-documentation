@@ -264,42 +264,19 @@ if uploaded_files:
             hint_sentence = "This model work with " + ", ".join(sorted(hint_keywords)) + "."
         else:
             hint_sentence = ""
+
+        
+        from prompt import (
+            build_purpose_prompt,
+            build_input_prompt,
+            build_output_prompt,
+            build_logic_prompt,
+            build_check_prompt,
+            build_assumptions_prompt
+        )
         
         # --- Generate high-level Purpose description ---
-        try:
-            joined_descriptions = "\n".join(
-                f"{k}: {v.get('summary', '')}" for k, v in summaries.items() if "summary" in v
-            )
-            joined_formulas = "\n".join(
-                f"{k}: {v.get('general_formula', '')}" for k, v in summaries.items() if "general_formula" in v
-            )
-
-            purpose_prompt = f"""You are an expert actuary and spreadsheet modeller.
-
-        You are reviewing an Excel model based on the **Lee-Carter mortality framework**.
-
-        {hint_sentence}
-
-        The model uses named ranges and formulas structured to perform actuarial calculations.
-
-        Below are descriptions of how various parts of the model behave:
-
-        --- Summaries ---
-        {joined_descriptions}
-
-        --- Formula patterns ---
-        {joined_formulas}
-
-        Using this information, write a **concise and confident purpose statement** for documentation. Your paragraph should follow this structure:
-
-        1. Start with a clear sentence about what the model is designed to do (e.g. project mortality, simulate survival rates).
-        2. Describe what kinds of inputs it uses (e.g. mortality trends, drift terms, random simulations).
-        3. Summarize the types of outputs produced (e.g. annuity rates, survival curves).
-        4. Close with a sentence explaining what this model is useful for — pricing, forecasting, risk management, etc.
-
-        Use actuarial language. Do not say “likely”, “possibly”, or “may”. Be direct and factual.
-        """
-
+            purpose_prompt = build_purpose_prompt(summaries, hint_sentence)
             purpose_response = client.chat.completions.create(
                 model="gpt-4o",
                 messages=[
@@ -308,9 +285,7 @@ if uploaded_files:
                 ],
                 temperature=0.3
             )
-
             model_purpose = purpose_response.choices[0].message.content.strip()
-
         except Exception as e:
             model_purpose = f"Error generating purpose: {e}"
 
@@ -370,35 +345,15 @@ if uploaded_files:
             general_formula = summary_json.get("general_formula", "")
             sheet = summary_json.get("sheet_name", "")
             excel_range = summary_json.get("excel_range", "")
-            prompt = f"""You are an expert actuary and survival modeller.
-
-        You are reviewing a spreadsheet model based on the Lee-Carter mortality model or a closely related framework.
-
-        {hint_sentence}
-
-        You're now documenting the spreadsheet input named `{input_name}`, located in sheet `{sheet}`, cell range `{excel_range}`.
-
-        Its name suggests it's related to: "{input_name}"
-
-        Here is the description of how this input is used in the model:
-        "{json_summary}"
-
-        And here is the general formula pattern that references it:
-        "{general_formula}"
-
-        Based on all the above, write a concise, confident description of what `{input_name}` represents and how it contributes to the model.
-
-        Use actuarial language. Avoid vague expressions like “might”, “somewhat”, “typically”, or filler phrases like “plays a crucial role” or “is important”. Do not describe patterns in the data (e.g., “decreasing linearly”) unless they are explicitly mentioned.
-
-        Respond with one precise sentence, or two if the second adds new technical detail or context.
-"""
+            
+            input_prompt = build_input_prompt(input_name, summary_json, hint_sentence)
 
             try:
                 response = client.chat.completions.create(
                     model="gpt-4o",
                     messages=[
                         {"role": "system", "content": "You provide concise descriptions of actuarial inputs."},
-                        {"role": "user", "content": prompt}
+                        {"role": "user", "content": input_prompt}
                     ],
                     temperature=0.3
                 )
@@ -428,32 +383,14 @@ if uploaded_files:
             sheet = summary_json.get("sheet_name", "")
             excel_range = summary_json.get("excel_range", "")
 
-            prompt = f"""You are an expert actuary and spreadsheet modeller.
-
-        You are reviewing an Excel spreadsheet built on the **Lee-Carter mortality model** or a closely related survival modelling framework.
-
-        {hint_sentence}
-
-        You are documenting the model output named `{output_name}`, located in sheet `{sheet}`, cell range `{excel_range}`.
-
-        Here is how this output behaves in the model:
-        "{json_summary}"
-
-        And here is the formula structure used to calculate it:
-        "{general_formula}"
-
-        Based on this, write a concise and confident explanation of what `{output_name}` represents and how it contributes to the model's output.
-
-        Use actuarial language. Do **not** include vague expressions like “might”, “possibly”, or “likely”, and avoid filler phrases like “plays a crucial role”, “important component”, or “used to calculate”. Focus instead on what it does and how it connects to the broader modelling framework.
-
-        Respond with **one precise sentence**, or two if the second adds useful technical context."""
+            output_prompt = build_output_prompt(name, summary_json, hint_sentence)
 
             try:
                 response = client.chat.completions.create(
                     model="gpt-4o",
                     messages=[
                         {"role": "system", "content": "You describe actuarial spreadsheet outputs."},
-                        {"role": "user", "content": prompt}
+                        {"role": "user", "content": output_prompt}
                     ],
                     temperature=0.3
                 )
@@ -484,40 +421,14 @@ if uploaded_files:
             excel_range = summary_json.get("excel_range", "")
             sheet = summary_json.get("sheet_name", "")
 
-            prompt = f"""You are an expert actuary and spreadsheet modeller.
-
-        You are reviewing a calculation step in an Excel model built on the **Lee-Carter mortality model** or a similar survival framework.
-
-        {hint_sentence}
-
-        The step being documented is `{name}`, located in sheet `{sheet}`, range `{excel_range}`. It is labelled as step {step_number} in the spreadsheet.
-
-        Below is a general description of the calculation:
-        "{json_summary}"
-
-        And here is the abstracted formula pattern:
-        "{general_formula}"
-
-        This step depends directly on the following named ranges:
-        {', '.join(dependencies_list)}
-
-        Write a concise explanation that covers:
-
-        1. The purpose of this calculation step.
-        2. The type of calculation it performs and what is being projected or transformed.
-        3. Its direct dependencies — inputs or other calculations — and how they flow into this step.
-
-        Use confident actuarial language. Avoid generic phrases like “important step”, “plays a role”, “typically used for”, etc. Do not speculate.
-
-        Respond with 1–2 clear sentences.
-        """
+            logic_prompt = build_logic_prompt(name, summary_json, step_number, hint_sentence)
 
             try:
                 response = client.chat.completions.create(
                     model="gpt-4o",
                     messages=[
                         {"role": "system", "content": "You describe logic steps in actuarial models clearly."},
-                        {"role": "user", "content": prompt}
+                        {"role": "user", "content": logic_prompt}
                     ],
                     temperature=0.3
                 )
@@ -556,33 +467,14 @@ if uploaded_files:
             excel_range = summary_json.get("excel_range", "")
 
             # GPT prompt to describe what the check does
-            prompt = f"""You are an expert actuary and spreadsheet modeller.
-
-        You are reviewing a **validation check** in an Excel model based on the **Lee-Carter mortality framework** or a similar survival model.
-
-        {hint_sentence}
-
-        The named range being reviewed is `{name}`, located in sheet `{sheet}`, cell range `{excel_range}`.
-
-        Here is a summary of the logic used in this check:
-        "{json_summary}"
-
-        And here is the general formula pattern:
-        "{general_formula}"
-
-        Write a clear and confident description of what this check is verifying, referencing model outputs, intermediate calculations, or assumptions where relevant.
-
-        Avoid vague words like “might” or “appears to”, and do not use generic filler like “this is a check to ensure…”.
-
-        Respond with one precise sentence explaining what this check validates or confirms.
-        """
+            check_prompt = build_check_prompt(name, summary_json, hint_sentence)
 
             try:
                 response = client.chat.completions.create(
                     model="gpt-4o",
                     messages=[
                         {"role": "system", "content": "You describe spreadsheet checks in actuarial models."},
-                        {"role": "user", "content": prompt}
+                        {"role": "user", "content": check_prompt}
                     ],
                     temperature=0.3
                 )
@@ -608,25 +500,7 @@ if uploaded_files:
                 f"{k}: {v.get('general_formula', '')}" for k, v in summaries.items() if "general_formula" in v
             )
 
-            assumptions_prompt = f"""You are an expert actuary and spreadsheet modeller reviewing a workbook based on the **Lee-Carter mortality model** or a similar mortality projection framework.
-
-        {hint_sentence}
-
-        Below are summaries and general formulas of the spreadsheet's calculations:
-
-        --- Summaries ---
-        {all_summaries}
-
-        --- Formula patterns ---
-        {all_formulas}
-
-        Using this information, write a **short, clear paragraph** that outlines:
-
-        1. The key assumptions used in this spreadsheet (e.g. mortality trends, parameter stability, projection horizon).
-        2. Any notable limitations or modelling constraints (e.g. fixed inputs, deterministic assumptions, lack of stress testing).
-
-        Avoid vague phrases like “it might be assumed” or “possibly”. Be direct and professional.
-        """
+            assumptions_prompt = build_assumptions_prompt(summaries, hint_sentence)
 
             assumptions_response = client.chat.completions.create(
                 model="gpt-4o",
@@ -641,11 +515,10 @@ if uploaded_files:
         except Exception as e:
             assumptions_text = f"Error generating assumptions and limitations: {e}"
         
+        
         with st.expander("📄 Spreadsheet Document", expanded=False):
             st.title("📄 Model Documentation")
-
             st.header("## Version Control")
-
             # Model version control table
             st.subheader("### Model Version Control")
             model_version_df = pd.DataFrame({
