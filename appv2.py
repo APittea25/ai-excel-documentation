@@ -45,7 +45,6 @@ if uploaded_files:
 
     from formula_mapper import remap_formula
     
-    
     named_ref_formulas = {}  # initialize the dictionary
     for (name, (file_name, sheet_name, coord_set, min_row, min_col)) in all_named_ref_info.items():
         entries = []
@@ -177,7 +176,7 @@ if uploaded_files:
             if not formulas:
                 continue
 
-            prompt = f"""
+            JSON_prompt = f"""
     You are an expert actuary and spreadsheet analyst.
    
     Given the following remapped formulas from an Excel named range, summarize the pattern behind the calculations in a general form.
@@ -200,13 +199,13 @@ if uploaded_files:
 
     Only return the JSON.
     """
-
+    
             try:
                 response = client.chat.completions.create(
                     model="gpt-4",
                     messages=[
                         {"role": "system", "content": "You summarize spreadsheet formulas into structured JSON."},
-                        {"role": "user", "content": prompt}
+                        {"role": "user", "content": JSON_prompt}
                     ],
                     temperature=0.3
                 )
@@ -234,10 +233,7 @@ if uploaded_files:
 
         with st.expander("📦 View JSON Output", expanded=False):
             st.json(summaries)
-
-        #prepare content for documentation
-
-
+        
         #Import hints
         from hint import generate_hint_sentence
         hint_sentence = generate_hint_sentence(summaries)
@@ -253,21 +249,14 @@ if uploaded_files:
         )
         
         # --- Generate high-level Purpose description ---
+        from llm_engine import call_chat_model
         purpose_prompt = build_purpose_prompt(summaries, hint_sentence)
-        try:
-            purpose_response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {"role": "system", "content": "You write purpose sections for actuarial models."},
-                    {"role": "user", "content": purpose_prompt}
-                ],
-                temperature=0.3
-            )
-            model_purpose = purpose_response.choices[0].message.content.strip()
-        except Exception as e:
-            model_purpose = f"Error generating purpose: {e}"
 
-        
+        model_purpose = call_chat_model(
+            system_msg="You write purpose sections for actuarial models.",
+            user_prompt=purpose_prompt
+        )
+      
         # input data
         input_summaries = {k: v for k, v in summaries.items() if k.startswith("i_")}
         inputs_data = []
