@@ -158,88 +158,11 @@ if uploaded_files:
             dot.edge(source, target)
 
     st.graphviz_chart(dot)
-# --- JSON Summary Generation Section ---
-    
-    st.subheader("🧠 Generate JSON and Documentation")
 
-    generate_json = st.button("🧾 Generate")
-
-    if generate_json:
-        from openai import OpenAI
-        import json
-
-        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
-        summaries = {}
-
-        for name, formulas in named_ref_formulas.items():
-            if not formulas:
-                continue
-
-            JSON_prompt = f"""
-    You are an expert actuary and spreadsheet analyst.
-   
-    Given the following remapped formulas from an Excel named range, summarize the pattern behind the calculations in a general form.
-    Each formula follows a remapped structure using notation like [1][2] to indicate row and column indices.
-
-    Please return a JSON object like:
-    {{
-      "file_name": "MyWorkbook.xlsx",
-      "sheet_name": "Inputs",
-      "excel_range": "B2:D5",
-      "named_range": "MyNamedRange",
-      "summary": "Description of what the formula does",
-      "general_formula": "for i in range(...): for j in range(...): Result[i][j] = ...",
-      "dependencies": ["OtherNamedRange1", "OtherNamedRange2"],
-      "notes": "Any caveats, limitations, or variations found"
-    }}
-
-    Formulas:
-    {formulas[:10]}  # Sample first 10 for context
-
-    Only return the JSON.
-    """
-    
-            try:
-                response = client.chat.completions.create(
-                    model="gpt-4",
-                    messages=[
-                        {"role": "system", "content": "You summarize spreadsheet formulas into structured JSON."},
-                        {"role": "user", "content": JSON_prompt}
-                    ],
-                    temperature=0.3
-                )
-                content = response.choices[0].message.content
-                parsed = json.loads(content)
-                
-                # Get file_name, sheet_name, coord_set for this named range
-                file_name, sheet_name, coord_set, *_ = all_named_ref_info[name]
-
-                # Calculate Excel range
-                min_col_letter = get_column_letter(min([c for (_, c) in coord_set]))
-                max_col_letter = get_column_letter(max([c for (_, c) in coord_set]))
-                min_row_num = min([r for (r, _) in coord_set])
-                max_row_num = max([r for (r, _) in coord_set])
-                excel_range = f"{min_col_letter}{min_row_num}:{max_col_letter}{max_row_num}"
-                
-                parsed["named_range"] = name  
-                parsed["file_name"] = file_name
-                parsed["sheet_name"] = sheet_name
-                parsed["excel_range"] = excel_range
-                parsed["dependencies"] = sorted(dependencies.get(name, []))
-                summaries[name] = parsed
-            except Exception as e:
-                summaries[name] = {"named_range": name,"error": str(e)}
-
-        with st.expander("📦 View JSON Output", expanded=False):
-            st.json(summaries)
+# ---- Imports for AI-Generated Response ----
         
-        #Import hints
-        from hint import generate_hint_sentence
-        hint_sentence = generate_hint_sentence(summaries)
-
-        #Import prompts
-        from prompt import (
+    from prompt import (
+            build_json_summary_prompt,
             build_purpose_prompt,
             build_input_prompt,
             build_output_prompt,
@@ -247,8 +170,61 @@ if uploaded_files:
             build_check_prompt,
             build_assumptions_prompt
         )
-        from llm_engine import call_chat_model
-       
+        
+    from llm_engine import call_chat_model
+    
+# --- JSON Summary Generation Section ---
+    
+    st.subheader("🧠 Generate JSON and Documentation")
+
+    generate_json = st.button("🧾 Generate")
+
+    if generate_json:
+        
+        summaries = {}
+        
+        for name, formulas in named_ref_formulas.items():
+            if not formulas:
+                continue
+
+            try:
+                JSON_prompt = build_json_summary_prompt(name, formulas)
+
+                response = call_chat_model(
+                    system_msg="You summarize spreadsheet formulas into structured JSON.",
+                    user_prompt=JSON_prompt
+                )
+
+                parsed = json.loads(response)
+
+                # (Continue adding file_name, sheet_name, dependencies, etc.)
+                file_name, sheet_name, coord_set, *_ = all_named_ref_info[name]
+
+                min_col_letter = get_column_letter(min([c for (_, c) in coord_set]))
+                max_col_letter = get_column_letter(max([c for (_, c) in coord_set]))
+                min_row_num = min([r for (r, _) in coord_set])
+                max_row_num = max([r for (r, _) in coord_set])
+                excel_range = f"{min_col_letter}{min_row_num}:{max_col_letter}{max_row_num}"
+
+                parsed.update({
+                    "named_range": name,
+                    "file_name": file_name,
+                    "sheet_name": sheet_name,
+                    "excel_range": excel_range,
+                    "dependencies": sorted(dependencies.get(name, []))
+                })
+
+                summaries[name] = parsed
+
+            except Exception as e:
+                summaries[name] = {"named_range": name, "error": str(e)}
+
+        with st.expander("📦 View JSON Output", expanded=False):
+            st.json(summaries)
+        
+        #Import hints
+        from hint import generate_hint_sentence
+        hint_sentence = generate_hint_sentence(summaries)
         
         # --- Generate high-level Purpose description ---
         purpose_prompt = build_purpose_prompt(summaries, hint_sentence)
