@@ -9,7 +9,7 @@ import graphviz
 from docx import Document
 import pandas as pd
 
-st.set_page_config(page_title="Named Range Formula Remapper", layout="wide")
+st.set_page_config(page_title="AI-Powered Spreadsheet Documentation", layout="wide")
 
 if "json_summaries" not in st.session_state:
     st.session_state.json_summaries = None
