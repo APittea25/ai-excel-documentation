@@ -205,7 +205,12 @@ if uploaded_files:
                     system_msg="You summarize spreadsheet formulas into structured JSON.",
                     user_prompt=JSON_prompt
                 )
-
+                
+                if response.startswith("```"):
+                    import re
+                    response = re.sub(r"^```(json)?", "", response)
+                    response = re.sub(r"```$", "", response)
+                    response = response.strip()
                 parsed = json.loads(response)
 
                 # (Continue adding file_name, sheet_name, dependencies, etc.)
