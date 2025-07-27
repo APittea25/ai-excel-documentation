@@ -140,7 +140,8 @@ if uploaded_files:
             replaced_formula = replaced_formula[:start] + remapped + replaced_formula[end:]
             offset += len(remapped) - len(raw)
         return replaced_formula
-
+        
+    named_ref_formulas = {}  # initialize the dictionary
     for (name, (file_name, sheet_name, coord_set, min_row, min_col)) in all_named_ref_info.items():
         entries = []
         formulas_for_graph = []
@@ -188,7 +189,7 @@ if uploaded_files:
         except Exception as e:
             entries.append(f"❌ Error accessing {name} in {sheet_name}: {e}")
 
-        named_ref_formulas = {}  # initialize the dictionary
+        
         named_ref_formulas[name] = formulas_for_graph
         
         limit = 50
