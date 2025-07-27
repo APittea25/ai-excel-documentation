@@ -160,7 +160,9 @@ if uploaded_files:
     st.graphviz_chart(dot)
 
 # ---- Imports for AI-Generated Response ----
-        
+
+    import json
+    
     from prompt import (
             build_json_summary_prompt,
             build_purpose_prompt,
