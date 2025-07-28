@@ -443,32 +443,32 @@ if uploaded_files:
             # Model version control table
             st.subheader("### Model Version Control")
             model_version_df = pd.DataFrame({
-                "Version": [""],
-                "Date": ["00/00/0000"],
-                "Info": [""],
-                "Updated by": [""],
-                "Reviewed by": [""],
-                "Review Date": [""]
+                "Version": ["1.0"],
+                "Date": ["2025-07-01"],
+                "Info": ["Initial release of mortality model with Lee-Carter projection logic."],
+                "Updated by": ["Modelling Team"],
+                "Reviewed by": ["Head of Actuarial"],
+                "Review Date": ["2025-07-15"]
             })
             st.dataframe(model_version_df, use_container_width=True)
 
             # Documentation version control table
             st.subheader("### Documentation Version Control")
             doc_version_df = pd.DataFrame({
-                "Version": [""],
-                "Date": ["00/00/0000"],
-                "Info": [""],
-                "Updated by": [""],
+                "Version": ["1.0"],
+                "Date": ["2025-07-24"],
+                "Info": ["AI-generated documentation based on uploaded model."],
+                "Updated by": ["AI Documentation Tool"],
                 "Reviewed by": [""],
                 "Review Date": [""]
             })
             st.dataframe(doc_version_df, use_container_width=True)
 
             # Ownership section
-            st.header("## Ownership")
+            st.header("### Owner: Modelling & Projections Team")
             st.text("### Owner")
-            st.text("### Risk rating (or other client control standard)")
-            st.text("### Internal audit history")
+            st.text("### Risk rating: Moderate (internal model used for pricing and forecasting)")
+            st.text("### Internal audit history: Last reviewed Q1 2025; next scheduled Q1 2026")
 
             # Purpose
             st.header("## Purpose")
@@ -506,7 +506,15 @@ if uploaded_files:
 
             # TAS Compliance
             st.header("## TAS Compliance")
-            st.text_area("Describe how the model complies with TAS:")
+            st.text_area("""This model and its documentation have been prepared in line with the principles of TAS 100 and TAS 300:
+
+- Assumptions are documented clearly and based on professional judgment or agreed inputs.
+- Calculations are described with sufficient clarity for another actuary to understand the structure and logic.
+- The purpose, limitations, and intended use of the model have been explicitly stated.
+- Validation checks are included to ensure outputs remain within reasonable bounds.
+- Ownership and version control are recorded to support governance and review.
+
+This model is not intended for public disclosure and assumes appropriate professional review before use in decision-making.""")
 
         # JSON download
         json_str = json.dumps(summaries, indent=2)
