@@ -64,6 +64,7 @@ Use actuarial language. Do not say “likely”, “possibly”, or “may”. B
 
 
 def build_input_prompt(input_name, summary_json, hint_sentence=None, example=None):
+    
     base = f"""You are an expert actuary and survival modeller.
 
 You are reviewing a spreadsheet model based on the Lee-Carter mortality model or a closely related framework.
@@ -130,38 +131,37 @@ Respond with **one precise sentence**, or two if the second adds useful technica
 def build_logic_prompt(name, summary_json, step_number, hint_sentence=None, example=None):
     base = f"""You are an expert actuary and spreadsheet modeller.
 
-You are reviewing a calculation step in an Excel model built on the **Lee-Carter mortality model** or a similar survival framework.
+You are reviewing a **logic step** in an Excel model built on the **Lee-Carter mortality model** or a similar survival projection framework.
 
-{hint_sentence}
+{hint_sentence or ""}
 
-The step being documented is `{name}`, located in sheet `{summary_json.get("sheet_name", "")}`, range `{summary_json.get("excel_range", "")}`. It is labelled as step {step_number} in the spreadsheet.
+The step being documented is `{name}`, located in sheet `{summary_json.get("sheet_name", "")}`, range `{summary_json.get("excel_range", "")}`. It is labelled as **Step {step_number}** in the spreadsheet.
 
-Below is a general description of the calculation:
+Here is a description of this step’s behavior in the model:
 "{summary_json.get("summary", "")}"
 
-And here is the abstracted formula pattern:
+And here is the generalised formula pattern:
 "{summary_json.get("general_formula", "")}"
 
-This step depends directly on the following named ranges:
-{', '.join(summary_json.get("dependencies", []))}
+This step depends on the following named ranges:
+{', '.join(summary_json.get("dependencies", [])) or "None listed"}
 """
 
     if example:
         base += f"\n--- Example Logic Description ---\n{example.strip()}\n"
 
     base += """
-Write a concise explanation that covers:
+Now write a clear and technical description of this step, using the following exact structure:
 
 1. The purpose of this calculation step.
-2. The type of calculation it performs and what is being projected or transformed.
-3. Its direct dependencies — inputs or other calculations — and how they flow into this step.
+2. The type of calculation it performs and what it is projecting or transforming.
+3. Its direct dependencies and how they influence or feed into this step.
 
-Use confident actuarial language. Avoid generic phrases like “important step”, “plays a role”, “typically used for”, etc. Do not speculate.
-
-Respond with 1–2 clear sentences.
+Respond in **three numbered sentences**, each covering one of the above points. Use actuarial language. Do **not** include filler phrases (e.g., "this is an important step") or speculative terms like "might" or "possibly".
 """
     return base
 
+    
 def build_check_prompt(name, summary_json, hint_sentence=None, example=None):
     base = f"""You are an expert actuary and spreadsheet modeller.
 
