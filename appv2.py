@@ -368,8 +368,14 @@ if uploaded_files:
             logic_hint = hint_map.get(name, "")
             logic_prompt = build_logic_prompt(name, summary_json, step_number, logic_hint,logic_example)
 
+            system_msg = (
+                "You are writing actuarial documentation for a spreadsheet model. "
+                "You must describe logic steps using exactly 3 points: Purpose, Calculation Type, and Dependencies. "
+                "Use the headings '**1. Purpose:**', '**2. Calculation Type:**', and '**3. Dependencies:**' as bullets. "
+                "Avoid vague or generic statements."
+            )
             explanation = call_chat_model(
-                system_msg="You describe logic steps in actuarial models clearly.",
+                system_msg=system_msg,
                 user_prompt=logic_prompt
             )
             
