@@ -25,7 +25,7 @@ Only return the JSON.
 """
 
 
-def build_purpose_prompt(summaries, hint_sentence, example=None):
+def build_purpose_prompt(summaries, example=None):
     joined_descriptions = "\n".join(
         f"{k}: {v.get('summary', '')}" for k, v in summaries.items() if "summary" in v
     )
@@ -36,8 +36,6 @@ def build_purpose_prompt(summaries, hint_sentence, example=None):
     base = f"""You are an expert actuary and spreadsheet modeller.
 
 You are reviewing an Excel model based on the **Lee-Carter mortality framework**.
-
-{hint_sentence}
 
 The model uses named ranges and formulas structured to perform actuarial calculations.
 """
@@ -65,7 +63,7 @@ Use actuarial language. Do not say “likely”, “possibly”, or “may”. B
     return base
 
 
-def build_input_prompt(input_name, summary_json, hint_sentence, example=None):
+def build_input_prompt(input_name, summary_json, hint_sentence=None, example=None):
     base = f"""You are an expert actuary and survival modeller.
 
 You are reviewing a spreadsheet model based on the Lee-Carter mortality model or a closely related framework.
@@ -97,7 +95,7 @@ Respond with one precise sentence, or two if the second adds new technical detai
     return base
 
 
-def build_output_prompt(output_name, summary_json, hint_sentence, example=None):
+def build_output_prompt(output_name, summary_json, hint_sentence=None, example=None):
     
     base = f"""You are an expert actuary and spreadsheet modeller.
 
@@ -129,7 +127,7 @@ Respond with **one precise sentence**, or two if the second adds useful technica
 """
     return base
 
-def build_logic_prompt(name, summary_json, step_number, hint_sentence, example=None):
+def build_logic_prompt(name, summary_json, step_number, hint_sentence=None, example=None):
     base = f"""You are an expert actuary and spreadsheet modeller.
 
 You are reviewing a calculation step in an Excel model built on the **Lee-Carter mortality model** or a similar survival framework.
@@ -164,7 +162,7 @@ Respond with 1–2 clear sentences.
 """
     return base
 
-def build_check_prompt(name, summary_json, hint_sentence, example=None):
+def build_check_prompt(name, summary_json, hint_sentence=None, example=None):
     base = f"""You are an expert actuary and spreadsheet modeller.
 
 You are reviewing a **validation check** in an Excel model based on the **Lee-Carter mortality framework** or a similar survival model.
@@ -193,7 +191,7 @@ Respond with one precise sentence explaining what this check validates or confir
     return base
 
 
-def build_assumptions_prompt(summaries, hint_sentence, example=None):
+def build_assumptions_prompt(summaries, example=None):
     all_summaries = "\n".join(
         f"{k}: {v.get('summary', '')}" for k, v in summaries.items() if "summary" in v
     )
@@ -202,8 +200,6 @@ def build_assumptions_prompt(summaries, hint_sentence, example=None):
     )
 
     base_prompt = f"""You are an expert actuary and spreadsheet modeller reviewing a workbook based on the **Lee-Carter mortality model** or a similar mortality projection framework.
-
-{hint_sentence}
 
 Below are summaries and general formulas of the spreadsheet's calculations:
 
