@@ -16,7 +16,7 @@ def generate_individual_hints(summaries: dict) -> dict:
         if "vol" in name_lower or "sd" in name_lower or "sigma" in name_lower:
             keywords.append("volatility inputs or stochastic variation")
         if "drift" in name_lower:
-            keywords.append("long-term mortality trends or drift terms")
+            keywords.append("long-term mortality trends. (not financial interest rate drift)")
         if "kapp" in name_lower or "beta" in name_lower or "alpha" in name_lower:
             keywords.append("Lee-Carter model parameters")
 
