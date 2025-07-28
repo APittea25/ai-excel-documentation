@@ -70,11 +70,12 @@ def build_input_prompt(input_name, summary_json, hint_sentence, example=None):
 
 You are reviewing a spreadsheet model based on the Lee-Carter mortality model or a closely related framework.
 
-{hint_sentence}
-
 You're now documenting the spreadsheet input named `{input_name}`, located in sheet `{summary_json.get("sheet_name", "")}`, cell range `{summary_json.get("excel_range", "")}`.
 
-Its name suggests it's related to: "{input_name}"
+Its name suggests it's related to: "{input_name}".
+    
+However, if the hint below provides more precise context, use that as the primary guide:
+"{hint_sentence}". 
 
 Here is the description of how this input is used in the model:
 "{summary_json.get("summary", "")}"
@@ -96,14 +97,18 @@ Respond with one precise sentence, or two if the second adds new technical detai
     return base
 
 
-def build_output_prompt(name, summary_json, hint_sentence, example=None):
+def build_output_prompt(output_name, summary_json, hint_sentence, example=None):
+    
     base = f"""You are an expert actuary and spreadsheet modeller.
 
 You are reviewing an Excel spreadsheet built on the **Lee-Carter mortality model** or a closely related survival modelling framework.
 
-{hint_sentence}
+You're documenting the model output named `{output_name}`, located in sheet `{summary_json.get("sheet_name", "")}`, cell range `{summary_json.get("excel_range", "")}`.
 
-You are documenting the model output named `{name}`, located in sheet `{summary_json.get("sheet_name", "")}`, cell range `{summary_json.get("excel_range", "")}`.
+Its name suggests it primarily relates to: "{output_name}".
+
+Use the following contextual hint as *additional guidance* where applicable:
+"{hint_sentence}"
 
 Here is how this output behaves in the model:
 "{summary_json.get("summary", "")}"
@@ -113,10 +118,10 @@ And here is the formula structure used to calculate it:
 """
 
     if example:
-        base += f"\n--- Example Output Description ---\n{example.strip()}\n"
+        base += f'\n--- Example Output Description ---\n{example.strip()}\n'
 
     base += """
-Based on this, write a concise and confident explanation of what `{name}` represents and how it contributes to the model's output.
+Based on all the above, write a concise and confident explanation of what `{output_name}` represents and how it contributes to the model's output.
 
 Use actuarial language. Do **not** include vague expressions like “might”, “possibly”, or “likely”, and avoid filler phrases like “plays a crucial role”, “important component”, or “used to calculate”. Focus instead on what it does and how it connects to the broader modelling framework.
 
