@@ -506,7 +506,7 @@ if uploaded_files:
 
             # TAS Compliance
             st.header("## TAS Compliance")
-            st.text_area("""This model and its documentation have been prepared in line with the principles of TAS 100 and TAS 300:
+            st.text_area( "Describe if the spreadsheet is TAS compliant:", value="""This model and its documentation have been prepared in line with the principles of TAS 100 and TAS 300:
 
 - Assumptions are documented clearly and based on professional judgment or agreed inputs.
 - Calculations are described with sufficient clarity for another actuary to understand the structure and logic.
@@ -514,7 +514,10 @@ if uploaded_files:
 - Validation checks are included to ensure outputs remain within reasonable bounds.
 - Ownership and version control are recorded to support governance and review.
 
-This model is not intended for public disclosure and assumes appropriate professional review before use in decision-making.""")
+This model is not intended for public disclosure and assumes appropriate professional review before use in decision-making.""",
+    height=220
+)
+
 
         # JSON download
         json_str = json.dumps(summaries, indent=2)
