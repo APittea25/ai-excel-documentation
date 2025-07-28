@@ -239,11 +239,10 @@ if uploaded_files:
             st.json(summaries)
         
         #Import hints
-        from hint import generate_hint_sentence
-        hint_sentence = generate_hint_sentence(summaries)
+        from hint import get_named_range_hint
         
         # --- Generate high-level Purpose description ---
-        purpose_prompt = build_purpose_prompt(summaries, hint_sentence,purpose_example)
+        purpose_prompt = build_purpose_prompt(summaries, purpose_example)
 
         model_purpose = call_chat_model(
             system_msg="You write purpose sections for actuarial models.",
