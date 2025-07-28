@@ -240,6 +240,7 @@ if uploaded_files:
         
         #Import hints
         from hint import generate_individual_hints
+        hint_map = generate_individual_hints(summaries)
         
         # --- Generate high-level Purpose description ---
         purpose_prompt = build_purpose_prompt(summaries, purpose_example)
